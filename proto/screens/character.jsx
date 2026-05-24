@@ -69,14 +69,14 @@ function Character({ inputs, character, setCharacter, onBack, onContinue }) {
     return () => { cancelled = true; };
   }, [phase]);
 
-  // ── Phase 2: Generate image via DALL-E 3 ─────────────────
+  // ── Phase 2: Generate image (Gemini Imagen 3 or DALL-E 3) ───
   useEffect(() => {
     if (phase !== "rendering") return;
     let cancelled = false;
 
     (async () => {
-      // DALL-E only works with OpenAI key
-      if (!window.__apiKeys?.openai) {
+      // Need at least Gemini or OpenAI key for image generation
+      if (!canGenerateImage()) {
         await sleep(2000);
         if (!cancelled) setPhase("reveal");
         return;
@@ -92,7 +92,7 @@ function Character({ inputs, character, setCharacter, onBack, onContinue }) {
 성별: ${character.gender}
 키워드: ${(character.keywords||[]).join(", ")}
 
-DALL-E 3 이미지 프롬프트를 영어로 생성하세요. JSON만:
+캐릭터 이미지 프롬프트를 영어로 생성하세요. JSON만:
 {"content_prompt": "..."}`,
             '캐릭터 이미지 프롬프트 생성기. content_prompt만 영어로. JSON만 출력.',
             200
@@ -102,7 +102,7 @@ DALL-E 3 이미지 프롬프트를 영어로 생성하세요. JSON만:
         } catch(_) {}
 
         const fullPrompt = `cute 3D clay character, ${contentPrompt}, chubby rounded body, smooth glossy plastic texture, fisheye lens close-up portrait, bright vivid colors, Pixar animation style, kawaii aesthetic, highly detailed 3D render, square format 1:1`;
-        const imageUrl = await callDallE(fullPrompt);
+        const imageUrl = await callImageGen(fullPrompt);
 
         if (!cancelled) {
           setCharacter(prev => ({ ...prev, image: true, imageUrl }));
@@ -130,9 +130,10 @@ function Generating({ phase=1, character }) {
     { t:"권역 매칭 (26개 중 1)", done:phase===2?true:"pending" },
     { t:"캐릭터명 생성", done:phase===2?true:"pending" },
   ];
+  const imgLabel = imageProviderLabel() || 'AI';
   const items2 = [
     { t:"캐릭터 컨셉 분석", done:true },
-    { t:"DALL-E 3 이미지 생성", done:"active" },
+    { t:`${imgLabel} 이미지 생성`, done:"active" },
     { t:"캐릭터 카드 구성", done:"pending" },
   ];
   const items = phase===1 ? items1 : items2;
@@ -179,7 +180,7 @@ function Generating({ phase=1, character }) {
 
 // ── Gender pick ───────────────────────────────────────────────
 function GenderPick({ character, onPick }) {
-  const hasOpenAI = !!window.__apiKeys?.openai;
+  const imgLabel = imageProviderLabel();
   return (
     <PhoneShell scroll={false}>
       <div style={{ flex:1, display:"flex", flexDirection:"column", padding:"32px 24px 24px", justifyContent:"center" }}>
@@ -187,7 +188,7 @@ function GenderPick({ character, onPick }) {
         <div style={{ height:12 }} />
         <Heading>{"이미지로 빚을 때\n어떤 모습이 좋을까요?"}</Heading>
         <div style={{ height:12 }} />
-        <Sub>{hasOpenAI ? "고정된 3D 클레이 스타일로 DALL-E 3가 1회 생성해요." : "OpenAI 키 없이는 그라디언트 오브로 표현돼요. 이미지 외 정체성은 같아요."}</Sub>
+        <Sub>{imgLabel ? `고정된 3D 클레이 스타일로 ${imgLabel}가 1회 생성해요.` : "API 키 없이는 그라디언트 오브로 표현돼요. 이미지 외 정체성은 같아요."}</Sub>
         <div style={{ height:32 }} />
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
           {[{ v:"여성", hi:"#ffd6e8", mid:"#f06aa2", lo:"#7a1454" },
