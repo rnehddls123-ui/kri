@@ -376,4 +376,16 @@ function Sub({ children, dark }) {
   return <p style={{ fontSize:14, fontWeight:500, lineHeight:1.55, color:dark?"rgba(255,255,255,0.62)":"var(--w-label-alternative)", margin:0 }}>{children}</p>;
 }
 
-Object.assign(window, { PhoneShell, ProgressBar, PageBar, Cta, PickCard, Chip, CharacterOrb, GoogleMap, Eyebrow, Heading, Sub });
+// Kept for input.jsx lodging card district detection
+const TOKYO_DISTRICTS = [
+  { name:"시모키타자와" }, { name:"신주쿠" },
+  { name:"하라주쿠" },    { name:"오모테산도" },
+  { name:"시부야" },      { name:"다이칸야마" },
+  { name:"롯폰기" },      { name:"긴자" },
+  { name:"마루노우치" },  { name:"츠키지" },
+  { name:"아사쿠사" },    { name:"우에노" },
+  { name:"야네센" },      { name:"아키하바라" },
+  { name:"이케부쿠로" },
+];
+
+Object.assign(window, { PhoneShell, ProgressBar, PageBar, Cta, PickCard, Chip, CharacterOrb, GoogleMap, TOKYO_DISTRICTS, Eyebrow, Heading, Sub });
