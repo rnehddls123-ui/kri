@@ -99,8 +99,8 @@ function pickCharacter(catMain, catSub) {
 }
 
 // ───── Mock place library ─────
-// place_id is the Google Places-style key. Coordinates are normalized 0..1
-// against the TokyoMap viewBox (used by both mini map and timeline map).
+// place_id is the Google Places-style key. pos x/y are legacy normalized coords;
+// lat/lng are real WGS-84 coordinates used by Google Maps JS API.
 const PLACES = {
   "ueno_ponta": {
     name: "Honke Ponta 본가폰타",

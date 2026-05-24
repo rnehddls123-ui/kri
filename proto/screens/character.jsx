@@ -9,8 +9,7 @@ function Character({ inputs, character, setCharacter, onBack, onContinue }) {
     let cancelled = false;
 
     (async () => {
-      const provider = getProvider();
-      if (!provider) {
+      if (!hasGemini()) {
         // No key → keep mock after a short delay
         await sleep(2400);
         if (!cancelled) setPhase("gender");
@@ -69,7 +68,7 @@ function Character({ inputs, character, setCharacter, onBack, onContinue }) {
     return () => { cancelled = true; };
   }, [phase]);
 
-  // ── Phase 2: Generate image (Gemini Imagen 3 or DALL-E 3) ───
+  // ── Phase 2: Generate image (Gemini Imagen 3) ───────────────
   useEffect(() => {
     if (phase !== "rendering") return;
     let cancelled = false;
@@ -140,8 +139,7 @@ function Generating({ phase=1, character }) {
   const hi  = character?.hi  || "#ffe5a8";
   const mid = character?.mid || "#ff7a3a";
   const lo  = character?.lo  || "#8a2400";
-  const provider = getProvider();
-  const providerLabel = { gemini:'Gemini', anthropic:'Claude', openai:'GPT-4o' }[provider] || '목 데이터';
+  const providerLabel = hasGemini() ? 'Gemini' : '목 데이터';
 
   return (
     <PhoneShell scroll={false}>
@@ -169,8 +167,8 @@ function Generating({ phase=1, character }) {
             );
           })}
         </div>
-        <div style={{ marginTop:20, padding:"6px 12px", borderRadius:9999, background:provider?"rgba(255,94,0,0.10)":"rgba(112,115,124,0.08)", fontSize:11, fontWeight:700, color:provider?"var(--w-accent-redorange)":"var(--w-label-assistive)", letterSpacing:"0.04em" }}>
-          {provider ? `✦ ${providerLabel} API 호출 중` : "목 데이터 사용 중 — ⚙ API 설정에서 키 입력"}
+        <div style={{ marginTop:20, padding:"6px 12px", borderRadius:9999, background:hasGemini()?"rgba(255,94,0,0.10)":"rgba(112,115,124,0.08)", fontSize:11, fontWeight:700, color:hasGemini()?"var(--w-accent-redorange)":"var(--w-label-assistive)", letterSpacing:"0.04em" }}>
+          {hasGemini() ? `✦ ${providerLabel} API 호출 중` : "목 데이터 사용 중 — ⚙ API 설정에서 키 입력"}
         </div>
       </div>
       <style>{`@keyframes pulse { 0%{transform:scale(0.95);opacity:0.9;} 70%{transform:scale(1.18);opacity:0;} 100%{transform:scale(1.18);opacity:0;} }`}</style>
@@ -229,7 +227,7 @@ function Reveal({ inputs, character, onBack, onContinue, onRedo }) {
         <Eyebrow tone="accent">당신의 도쿄 캐릭터</Eyebrow>
         <div style={{ height:16 }} />
         <div style={{ background:"linear-gradient(160deg, #2a2225 0%, #1a1518 100%)", borderRadius:24, padding:"22px 20px 20px", border:"1px solid rgba(255,255,255,0.06)", display:"flex", flexDirection:"column", alignItems:"center" }}>
-          <CharacterOrb hi={character.hi} mid={character.mid} lo={character.lo} size={170} label={character.imageUrl?"DALL-E 3":"AI 생성"} imageUrl={character.imageUrl} />
+          <CharacterOrb hi={character.hi} mid={character.mid} lo={character.lo} size={170} label={character.imageUrl?"Imagen 3":"AI 생성"} imageUrl={character.imageUrl} />
           <div style={{ height:16 }} />
           <div style={{ fontFamily:"var(--w-font-display)", fontWeight:700, fontSize:22, lineHeight:1.18, letterSpacing:"-0.02em", textAlign:"center", textWrap:"balance" }}>{character.name}</div>
           <div style={{ height:12 }} />
