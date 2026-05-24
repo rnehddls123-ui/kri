@@ -12,7 +12,7 @@ function Itinerary({ character, inputs, onBack, openPlace, onOpenPlace, onCloseP
 
     (async () => {
       const start    = Date.now();
-      const provider = getProvider();
+      const provider = hasGemini() ? 'gemini' : null;
 
       // Date math: how many days?
       const arrDate = new Date(inputs.arrDate || '2025-11-22');
@@ -108,13 +108,17 @@ JSON 형식 (days 배열 ${numDays}개):
   const dayData    = liveItin.days.find(d => d.idx === day) || liveItin.days[0];
   const placeNodes = dayData.nodes.filter(n => n.type === 'place');
   const pins       = placeNodes
-    .map((n, i) => ({ ...(PLACES[n.id]?.pos || {}), id: n.id, label: String(i + 1) }))
-    .filter(p => p.x != null);
+    .map((n, i) => {
+      const p = PLACES[n.id];
+      if (!p) return null;
+      return { lat: p.lat, lng: p.lng, id: n.id, label: String(i + 1), name: p.name };
+    })
+    .filter(Boolean);
 
   const arrD   = new Date(liveItin.arrival.date);
   const depD   = new Date(liveItin.departure.date);
   const nights = Math.round((depD - arrD) / (1000 * 60 * 60 * 24));
-  const providerLabel = { gemini:'Gemini', anthropic:'Claude', openai:'GPT-4o' }[usedProvider] || null;
+  const providerLabel = usedProvider === 'gemini' ? 'Gemini' : null;
 
   return (
     <PhoneShell
@@ -159,13 +163,13 @@ JSON 형식 (days 배열 ${numDays}개):
       )}
 
       {/* Map */}
-      <div style={{ margin:'0 20px 12px', borderRadius:18, overflow:'hidden', background:'var(--w-cool-98)', aspectRatio:'1.55 / 1', position:'relative', border:'1px solid var(--w-line-alternative)' }}>
-        <TokyoMap pins={pins} path={pins} highlight={dayData.area} onPin={p => onOpenPlace(p.id)} />
-        <div style={{ position:'absolute', left:12, top:12, background:'rgba(255,255,255,0.94)', padding:'6px 10px', borderRadius:8, fontSize:11, fontWeight:700, display:'flex', alignItems:'center', gap:6 }}>
+      <div style={{ margin:'0 20px 12px', borderRadius:18, overflow:'hidden', aspectRatio:'1.55 / 1', position:'relative', border:'1px solid var(--w-line-alternative)' }}>
+        <GoogleMap pins={pins} onPin={p => onOpenPlace(p.id)} height="100%" />
+        <div style={{ position:'absolute', left:12, top:12, background:'rgba(255,255,255,0.94)', padding:'6px 10px', borderRadius:8, fontSize:11, fontWeight:700, display:'flex', alignItems:'center', gap:6, pointerEvents:'none' }}>
           <img src="ds/icons/location.svg" style={{ width:12, height:12, filter:'brightness(0)', opacity:0.7 }} />
           {dayData.area}
         </div>
-        <div style={{ position:'absolute', right:12, top:12, background:'var(--w-cool-22)', color:'#fff', padding:'6px 10px', borderRadius:8, fontSize:11, fontWeight:700 }}>
+        <div style={{ position:'absolute', right:12, top:12, background:'var(--w-cool-22)', color:'#fff', padding:'6px 10px', borderRadius:8, fontSize:11, fontWeight:700, pointerEvents:'none' }}>
           {placeNodes.length}개 장소
         </div>
       </div>
@@ -314,8 +318,7 @@ function PlaceRow({ n, num, onOpen }) {
 // ── Generating loading screen ─────────────────────────────────
 function GeneratingItin() {
   const [step, setStep] = useState(0);
-  const provider = getProvider();
-  const label    = { gemini:'Gemini', anthropic:'Claude', openai:'GPT-4o' }[provider] || null;
+  // uses hasGemini() directly
 
   const steps = [
     '취향 벡터 추출 · 카테고리 가중치 계산',
@@ -354,10 +357,8 @@ function GeneratingItin() {
             );
           })}
         </div>
-        <div style={{ marginTop:20, padding:'6px 12px', borderRadius:9999, background:provider?'rgba(0,102,255,0.08)':'rgba(112,115,124,0.08)', textAlign:'center', fontSize:11, fontWeight:700, color:provider?'var(--w-primary)':'var(--w-label-assistive)', letterSpacing:'0.04em' }}>
-          {provider
-            ? `✦ ${label}가 캐릭터 취향에 맞는 장소를 고르는 중`
-            : '목 데이터 사용 중 — ⚙ API 설정에서 키 입력'}
+        <div style={{ marginTop:20, padding:'6px 12px', borderRadius:9999, background:hasGemini()?'rgba(0,102,255,0.08)':'rgba(112,115,124,0.08)', textAlign:'center', fontSize:11, fontWeight:700, color:hasGemini()?'var(--w-primary)':'var(--w-label-assistive)', letterSpacing:'0.04em' }}>
+          {hasGemini() ? '✦ Gemini가 캐릭터 취향으로 장소를 선택하는 중' : '목 데이터 사용 중 — ⚙ API 설정에서 키 입력'}
         </div>
       </div>
     </PhoneShell>
