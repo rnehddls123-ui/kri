@@ -1,0 +1,278 @@
+/* =========================================================================
+   Wanted Design System — Tokens
+   Sourced from "Wanted Design System (Community)" Figma file.
+   Distributed under CC BY 4.0. https://wantedlab.github.io/
+
+   Two webfonts are required:
+   - Pretendard JP  (body / UI workhorse, 99% of all text)
+   - Wanted Sans    (brand / display only — large numerics, hero type)
+
+   Both load from the official jsDelivr mirrors maintained by Wanted/orioncactus.
+   ========================================================================= */
+
+/* ---------- Fonts ----------------------------------------------------- */
+/* Pretendard JP — served from the bundled OTFs in /fonts. */
+@font-face { font-family: "Pretendard JP"; font-style: normal; font-weight: 100;
+  src: url("fonts/PretendardJP-Thin.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Pretendard JP"; font-style: normal; font-weight: 200;
+  src: url("fonts/PretendardJP-ExtraLight.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Pretendard JP"; font-style: normal; font-weight: 300;
+  src: url("fonts/PretendardJP-Light.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Pretendard JP"; font-style: normal; font-weight: 400;
+  src: url("fonts/PretendardJP-Regular.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Pretendard JP"; font-style: normal; font-weight: 500;
+  src: url("fonts/PretendardJP-Medium.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Pretendard JP"; font-style: normal; font-weight: 600;
+  src: url("fonts/PretendardJP-SemiBold.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Pretendard JP"; font-style: normal; font-weight: 700;
+  src: url("fonts/PretendardJP-Bold.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Pretendard JP"; font-style: normal; font-weight: 800;
+  src: url("fonts/PretendardJP-ExtraBold.otf") format("opentype"); font-display: swap; }
+@font-face { font-family: "Pretendard JP"; font-style: normal; font-weight: 900;
+  src: url("fonts/PretendardJP-Black.otf") format("opentype"); font-display: swap; }
+
+/* Wanted Sans Variable — display only. Loaded from the official Wanted CDN. */
+@import url("https://cdn.jsdelivr.net/gh/wanteddev/wanted-sans@v1.0.3/packages/wanted-sans/fonts/webfonts/variable/split/WantedSansVariable.min.css");
+
+/* ---------- Atomic palette (all 13 ramps + opacity scale) ------------- */
+:root {
+  /* common */
+  --w-common-100: #FFFFFF;
+  --w-common-0:   #000000;
+
+  /* neutral (warm gray) */
+  --w-neutral-99: #F7F7F7;  --w-neutral-95: #DCDCDC;  --w-neutral-90: #C4C4C4;
+  --w-neutral-85: #B0B0B0;  --w-neutral-80: #9B9B9B;  --w-neutral-75: #8A8A8A;
+  --w-neutral-70: #737373;  --w-neutral-60: #5C5C5C;  --w-neutral-50: #474747;
+  --w-neutral-40: #303030;  --w-neutral-35: #2A2A2A;  --w-neutral-25: #1C1C1C;
+  --w-neutral-20: #171717;  --w-neutral-15: #0F0F0F;
+
+  /* cool neutral (primary text / surface ramp) */
+  --w-cool-99: #F7F7F8;  --w-cool-98: #F4F4F5;  --w-cool-97: #EAEBEC;
+  --w-cool-96: #E1E2E4;  --w-cool-95: #DBDCDF;  --w-cool-90: #C2C4C8;
+  --w-cool-85: #AEB0B6;  --w-cool-80: #989BA2;  --w-cool-75: #878A93;
+  --w-cool-70: #70737C;  --w-cool-60: #5A5C63;  --w-cool-50: #46474C;
+  --w-cool-40: #37383C;  --w-cool-35: #333438;  --w-cool-30: #2E2F33;
+  --w-cool-27: #292A2D;  --w-cool-25: #212225;  --w-cool-22: #1B1C1E;
+  --w-cool-20: #171719;  --w-cool-17: #141415;  --w-cool-15: #0F0F10;
+
+  /* blue — the brand primary */
+  --w-blue-99: #F7FBFF;  --w-blue-95: #EAF2FE;  --w-blue-90: #C9DEFE;
+  --w-blue-80: #9EC5FF;  --w-blue-70: #69A5FF;  --w-blue-65: #4F95FF;
+  --w-blue-60: #3385FF;  --w-blue-55: #1A75FF;  --w-blue-50: #0066FF;
+  --w-blue-45: #005EEB;  --w-blue-40: #0054D1;  --w-blue-30: #003E9C;
+  --w-blue-20: #002966;  --w-blue-10: #001536;
+
+  /* red — status negative */
+  --w-red-99: #FFFAFA;  --w-red-95: #FEECEC;  --w-red-90: #FED5D5;
+  --w-red-80: #FFB5B5;  --w-red-70: #FF8C8C;  --w-red-60: #FF6363;
+  --w-red-50: #FF4242;  --w-red-40: #E52222;  --w-red-30: #B20C0C;
+  --w-red-20: #750404;  --w-red-10: #3B0101;
+
+  /* green — status positive */
+  --w-green-99: #F2FFF6;  --w-green-95: #D9FFE6;  --w-green-90: #ACFCC7;
+  --w-green-80: #7DF5A5;  --w-green-70: #49E57D;  --w-green-60: #1ED45A;
+  --w-green-50: #00BF40;  --w-green-40: #009632;  --w-green-30: #006E25;
+  --w-green-20: #004517;  --w-green-10: #00240C;
+
+  /* orange */
+  --w-orange-99: #FFFCF7; --w-orange-95: #FEF4E6; --w-orange-90: #FEE6C6;
+  --w-orange-80: #FFD49C; --w-orange-70: #FFC06E; --w-orange-60: #FFA938;
+  --w-orange-50: #FF9200; --w-orange-45: #D47800; --w-orange-40: #D17600;
+  --w-orange-30: #9C5800; --w-orange-20: #663A00; --w-orange-10: #361E00;
+
+  /* redOrange — Wanted accent */
+  --w-redorange-99: #FFFAF7; --w-redorange-95: #FEEEE5; --w-redorange-90: #FEDBC6;
+  --w-redorange-80: #FFC09C; --w-redorange-70: #FF9C63; --w-redorange-60: #FF7B2E;
+  --w-redorange-50: #FF5E00; --w-redorange-48: #F55A00; --w-redorange-40: #CC4B00;
+  --w-redorange-30: #943600; --w-redorange-20: #5C2200; --w-redorange-10: #2E1100;
+
+  /* lime / cyan / lightBlue / violet / purple / pink — accents */
+  --w-lime-50: #58CF04;   --w-lime-60: #6BE016;
+  --w-cyan-50: #00BDDE;   --w-cyan-60: #28D0ED;
+  --w-lightblue-50: #00AEFF; --w-lightblue-60: #3DC2FF;
+  --w-violet-50: #7D5EF7; --w-violet-60: #9E86FC; --w-violet-45: #6541F2;
+  --w-purple-50: #CB59FF; --w-purple-60: #D478FF;
+  --w-pink-50: #F553DA;   --w-pink-60: #FA73E3;
+}
+
+/* ---------- Semantic — LIGHT (default) -------------------------------- */
+:root,
+.w-theme-light {
+  /* Primary */
+  --w-primary:           var(--w-blue-50);      /* #0066FF brand action */
+  --w-primary-strong:    var(--w-blue-45);
+  --w-primary-heavy:     var(--w-blue-40);
+
+  /* Label / text */
+  --w-label-normal:      var(--w-cool-22);                /* #1B1C1E primary text  */
+  --w-label-strong:      var(--w-common-0);
+  --w-label-neutral:     rgba(27, 28, 30, 0.88);
+  --w-label-alternative: rgba(55, 56, 60, 0.61);          /* secondary text  */
+  --w-label-assistive:   rgba(55, 56, 60, 0.28);          /* tertiary text  */
+  --w-label-disable:     rgba(55, 56, 60, 0.16);
+  --w-label-inverse:     var(--w-common-100);
+
+  /* Background */
+  --w-bg-normal:         var(--w-common-100);             /* #FFFFFF page */
+  --w-bg-alternative:    var(--w-cool-98);                /* #F4F4F5 muted surface */
+  --w-bg-neutral:        rgba(112, 115, 124, 0.05);
+  --w-bg-elevated:       var(--w-common-100);             /* card on page */
+  --w-bg-elevated-alt:   var(--w-cool-99);
+  --w-bg-inverse:        var(--w-cool-22);
+
+  /* Line / border */
+  --w-line-normal:       rgba(112, 115, 124, 0.22);
+  --w-line-neutral:      rgba(112, 115, 124, 0.16);
+  --w-line-alternative:  rgba(112, 115, 124, 0.08);
+  --w-line-strong:       rgba(112, 115, 124, 0.52);
+
+  /* Status */
+  --w-status-positive:   var(--w-green-50);
+  --w-status-cautionary: var(--w-orange-50);
+  --w-status-negative:   var(--w-red-50);
+
+  /* Accent (Wanted's signature) */
+  --w-accent-redorange:  var(--w-redorange-50);
+  --w-accent-cyan:       var(--w-cyan-50);
+  --w-accent-violet:     var(--w-violet-50);
+
+  /* Interaction */
+  --w-interaction-inactive: var(--w-cool-80);
+  --w-interaction-disable:  var(--w-cool-98);
+
+  /* Component fill (chips, switches, pressed) */
+  --w-fill-normal:       rgba(112, 115, 124, 0.08);
+  --w-fill-strong:       rgba(112, 115, 124, 0.16);
+  --w-fill-inverse:      rgba(255, 255, 255, 0.12);
+
+  /* Material — protection gradient & overlays */
+  --w-material-dimmer:   rgba(23, 23, 25, 0.52);
+  --w-material-thin:     rgba(255, 255, 255, 0.6);
+
+  /* Shadow — Wanted's "Normal" tier (low-density) */
+  --w-shadow-xs:   0 1px  2px -1px rgba(23, 23, 23, .10);
+  --w-shadow-sm:   0 2px  4px -2px rgba(23, 23, 23, .06), 0 4px  6px -1px rgba(23, 23, 23, .06);
+  --w-shadow-md:   0 4px  6px -2px rgba(  0,  0,  0, .07), 0 10px 15px -3px rgba(23, 23, 23, .07);
+  --w-shadow-lg:   0 6px 10px -4px rgba(23, 23, 23, .08), 0 16px 24px -6px rgba(23, 23, 23, .08);
+  --w-shadow-xl:   0 10px 15px -5px rgba(23, 23, 23, .10), 0 24px 38px -10px rgba(23, 23, 23, .12);
+}
+
+/* ---------- Semantic — DARK ------------------------------------------- */
+.w-theme-dark {
+  --w-primary:           var(--w-blue-55);
+  --w-primary-strong:    var(--w-blue-50);
+  --w-primary-heavy:     var(--w-blue-65);
+
+  --w-label-normal:      var(--w-cool-99);
+  --w-label-strong:      var(--w-common-100);
+  --w-label-neutral:     rgba(247, 247, 248, 0.88);
+  --w-label-alternative: rgba(220, 220, 223, 0.61);
+  --w-label-assistive:   rgba(220, 220, 223, 0.28);
+  --w-label-disable:     rgba(220, 220, 223, 0.16);
+  --w-label-inverse:     var(--w-common-0);
+
+  --w-bg-normal:         var(--w-cool-15);          /* #0F0F10 deepest */
+  --w-bg-alternative:    var(--w-cool-17);
+  --w-bg-neutral:        rgba(112, 115, 124, 0.12);
+  --w-bg-elevated:       var(--w-cool-22);          /* card */
+  --w-bg-elevated-alt:   var(--w-cool-25);
+  --w-bg-inverse:        var(--w-cool-99);
+
+  --w-line-normal:       rgba(112, 115, 124, 0.32);
+  --w-line-neutral:      rgba(112, 115, 124, 0.22);
+  --w-line-alternative:  rgba(112, 115, 124, 0.12);
+  --w-line-strong:       rgba(174, 176, 182, 0.52);
+
+  --w-status-positive:   var(--w-green-60);
+  --w-status-cautionary: var(--w-orange-60);
+  --w-status-negative:   var(--w-red-60);
+
+  --w-accent-redorange:  var(--w-redorange-60);
+  --w-accent-cyan:       var(--w-cyan-60);
+  --w-accent-violet:     var(--w-violet-60);
+
+  --w-interaction-inactive: var(--w-cool-50);
+  --w-interaction-disable:  var(--w-cool-25);
+
+  --w-fill-normal:       rgba(112, 115, 124, 0.22);
+  --w-fill-strong:       rgba(112, 115, 124, 0.35);
+  --w-fill-inverse:      rgba(0, 0, 0, 0.12);
+
+  --w-material-dimmer:   rgba(0, 0, 0, 0.72);
+  --w-material-thin:     rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- Spacing / radius (derived from observed layout) ----------- */
+:root {
+  --w-space-2:   2px;   --w-space-4:   4px;   --w-space-6:  6px;
+  --w-space-8:   8px;   --w-space-10: 10px;   --w-space-12: 12px;
+  --w-space-16: 16px;   --w-space-20: 20px;   --w-space-24: 24px;
+  --w-space-32: 32px;   --w-space-40: 40px;   --w-space-48: 48px;
+  --w-space-64: 64px;   --w-space-96: 96px;   --w-space-128: 128px;
+
+  --w-radius-2:    2px;   --w-radius-4:    4px;   --w-radius-6:    6px;
+  --w-radius-8:    8px;   --w-radius-10:  10px;   --w-radius-12:  12px;
+  --w-radius-16:  16px;   --w-radius-20:  20px;   --w-radius-24:  24px;
+  --w-radius-32:  32px;   --w-radius-full: 9999px;
+}
+
+/* ---------- Typography ramp ------------------------------------------- */
+/* Pretendard JP is the workhorse. Wanted Sans is for very large hero/display only. */
+:root {
+  --w-font-sans:    "Pretendard JP", "Pretendard", -apple-system, BlinkMacSystemFont,
+                    "Apple SD Gothic Neo", "Noto Sans KR", "Segoe UI", Roboto, sans-serif;
+  --w-font-display: "Wanted Sans Variable", "Wanted Sans", "Pretendard JP", "Pretendard", sans-serif;
+  --w-font-mono:    "SF Mono", ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+/* Weight map — Pretendard JP ships Regular/Medium/SemiBold/Bold/ExtraBold. */
+.w-font-regular  { font-weight: 400; }
+.w-font-medium   { font-weight: 500; }
+.w-font-semibold { font-weight: 600; }
+.w-font-bold     { font-weight: 700; }
+.w-font-extra    { font-weight: 800; }
+
+/* Type styles — every style observed in Foundation/Typography is here.
+   Naming: .w-{role}-{level}[--reading] for the alt line-height variant. */
+
+.w-display-1 { font-family: var(--w-font-display); font-weight: 700; font-size: 56px; line-height: 1.30;  letter-spacing: -0.029em; }
+.w-display-2 { font-family: var(--w-font-display); font-weight: 700; font-size: 40px; line-height: 1.30;  letter-spacing: -0.028em; }
+.w-display-3 { font-family: var(--w-font-sans);    font-weight: 700; font-size: 36px; line-height: 1.334; letter-spacing: -0.027em; }
+
+.w-title-1   { font-family: var(--w-font-sans); font-weight: 700; font-size: 32px; line-height: 1.375; letter-spacing: -0.0253em; }
+.w-title-2   { font-family: var(--w-font-sans); font-weight: 700; font-size: 28px; line-height: 1.358; letter-spacing: -0.024em; }
+.w-title-3   { font-family: var(--w-font-sans); font-weight: 700; font-size: 24px; line-height: 1.334; letter-spacing: -0.023em; }
+
+.w-heading-1 { font-family: var(--w-font-sans); font-weight: 700; font-size: 22px; line-height: 1.364; letter-spacing: -0.0194em; }
+.w-heading-2 { font-family: var(--w-font-sans); font-weight: 700; font-size: 20px; line-height: 1.4;   letter-spacing: -0.012em; }
+
+.w-headline-1 { font-family: var(--w-font-sans); font-weight: 700; font-size: 18px; line-height: 1.445; letter-spacing: -0.002em; }
+.w-headline-2 { font-family: var(--w-font-sans); font-weight: 700; font-size: 17px; line-height: 1.412; letter-spacing: 0; }
+
+.w-body-1            { font-family: var(--w-font-sans); font-weight: 500; font-size: 16px; line-height: 1.5;   letter-spacing: 0.0057em; }
+.w-body-1--reading   { font-family: var(--w-font-sans); font-weight: 500; font-size: 16px; line-height: 1.625; letter-spacing: 0.0057em; }
+.w-body-1--bold      { font-family: var(--w-font-sans); font-weight: 700; font-size: 16px; line-height: 1.5;   letter-spacing: 0.0057em; }
+.w-body-2            { font-family: var(--w-font-sans); font-weight: 500; font-size: 15px; line-height: 1.467; letter-spacing: 0.0096em; }
+.w-body-2--reading   { font-family: var(--w-font-sans); font-weight: 500; font-size: 15px; line-height: 1.6;   letter-spacing: 0.0096em; }
+.w-body-2--bold      { font-family: var(--w-font-sans); font-weight: 700; font-size: 15px; line-height: 1.467; letter-spacing: 0.0096em; }
+
+.w-label-1           { font-family: var(--w-font-sans); font-weight: 500; font-size: 14px; line-height: 1.429; letter-spacing: 0.0145em; }
+.w-label-1--reading  { font-family: var(--w-font-sans); font-weight: 500; font-size: 14px; line-height: 1.571; letter-spacing: 0.0145em; }
+.w-label-1--bold     { font-family: var(--w-font-sans); font-weight: 700; font-size: 14px; line-height: 1.429; letter-spacing: 0.0145em; }
+.w-label-2           { font-family: var(--w-font-sans); font-weight: 700; font-size: 13px; line-height: 1.385; letter-spacing: 0.0194em; }
+
+.w-caption-1 { font-family: var(--w-font-sans); font-weight: 700; font-size: 12px; line-height: 1.334; letter-spacing: 0.0252em; }
+.w-caption-2 { font-family: var(--w-font-sans); font-weight: 700; font-size: 11px; line-height: 1.273; letter-spacing: 0.0311em; }
+
+/* ---------- Element base --------------------------------------------- */
+html, body {
+  background: var(--w-bg-normal);
+  color: var(--w-label-normal);
+  font-family: var(--w-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Selection */
+::selection { background: rgba(0, 102, 255, 0.18); color: inherit; }
