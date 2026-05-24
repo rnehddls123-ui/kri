@@ -83,7 +83,32 @@ function parseJSON(text) {
   return JSON.parse(m[1] || m[0]);
 }
 
-// DALL-E 3 image generation (only OpenAI key works for this)
+// ── Image generation ─────────────────────────────────────────
+// Tries Gemini Imagen 3 first, then DALL-E 3 (OpenAI) as fallback.
+// Returns a URL (data: for Imagen, https: for DALL-E).
+
+async function callGeminiImage(prompt) {
+  const key = window.__apiKeys?.gemini;
+  if (!key) throw new Error('No Gemini key for image generation');
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${key}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        instances: [{ prompt }],
+        parameters: { sampleCount: 1, aspectRatio: '1:1' },
+      }),
+    }
+  );
+  if (!res.ok) { const e = await res.json().catch(()=>{}); throw new Error(e?.error?.message || `Imagen HTTP ${res.status}`); }
+  const data = await res.json();
+  const b64  = data.predictions?.[0]?.bytesBase64Encoded;
+  if (!b64) throw new Error('Imagen returned no image data');
+  const mime = data.predictions?.[0]?.mimeType || 'image/png';
+  return `data:${mime};base64,${b64}`;
+}
+
 async function callDallE(prompt) {
   const key = window.__apiKeys?.openai;
   if (!key) throw new Error('No OpenAI key for image generation');
@@ -95,6 +120,23 @@ async function callDallE(prompt) {
   if (!res.ok) { const e = await res.json().catch(()=>{}); throw new Error(e?.error?.message || `DALL-E HTTP ${res.status}`); }
   const data = await res.json();
   return data.data[0].url;
+}
+
+// Universal image generator — Gemini Imagen 3 preferred, DALL-E 3 fallback
+async function callImageGen(prompt) {
+  if (window.__apiKeys?.gemini)  return callGeminiImage(prompt);
+  if (window.__apiKeys?.openai)  return callDallE(prompt);
+  throw new Error('No image generation key (need Gemini or OpenAI)');
+}
+
+function canGenerateImage() {
+  return !!(window.__apiKeys?.gemini || window.__apiKeys?.openai);
+}
+
+function imageProviderLabel() {
+  if (window.__apiKeys?.gemini) return 'Imagen 3';
+  if (window.__apiKeys?.openai) return 'DALL-E 3';
+  return null;
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -189,7 +231,7 @@ function buildItinerary(aiDays, inputs, PLACES) {
   };
 }
 
-Object.assign(window, { callLLM, parseJSON, callDallE, sleep, getProvider, buildItinerary, addMin, buildDayNodes });
+Object.assign(window, { callLLM, parseJSON, callDallE, callGeminiImage, callImageGen, canGenerateImage, imageProviderLabel, sleep, getProvider, buildItinerary, addMin, buildDayNodes });
 
 // ══════════════════════════════════════════════════════════════
 // UI Components
