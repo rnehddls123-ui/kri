@@ -1,0 +1,325 @@
+/* Trip-Service prototype — local atoms on top of Wanted DS tokens */
+
+* { box-sizing: border-box; -webkit-font-smoothing: antialiased; }
+
+/* ───── Phone shell scaffolding (used inside IOSDevice) ───── */
+.ts-screen {
+  height: 100%;
+  display: flex; flex-direction: column;
+  font-family: var(--w-font-sans);
+  color: var(--w-label-normal);
+  background: var(--w-bg-normal);
+  overflow: hidden;
+  position: relative;
+}
+.ts-screen--alt { background: var(--w-bg-alternative); }
+.ts-screen--ink { background: var(--w-cool-15); color: #fff; }
+
+.ts-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 20px 14px;
+  flex-shrink: 0;
+}
+.ts-topbar__back {
+  width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+  margin-left: -6px;
+}
+.ts-topbar__back img { width: 22px; height: 22px; filter: brightness(0); opacity: 0.78; }
+.ts-screen--ink .ts-topbar__back img { filter: brightness(0) invert(1); }
+
+.ts-progress {
+  height: 3px; background: var(--w-fill-normal);
+  border-radius: 9999px; flex: 1; margin: 0 14px;
+  overflow: hidden;
+}
+.ts-progress__fill { height: 100%; background: var(--w-primary); border-radius: 9999px; }
+.ts-progress__count {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.031em;
+  color: var(--w-label-alternative);
+}
+
+.ts-body {
+  flex: 1; padding: 8px 24px 24px;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.ts-body--scroll { overflow-y: auto; }
+
+/* Headings */
+.ts-eyebrow {
+  font-size: 12px; font-weight: 700; letter-spacing: 0.05em;
+  color: var(--w-primary); text-transform: uppercase;
+}
+.ts-eyebrow--accent { color: var(--w-accent-redorange); }
+.ts-h1 {
+  font-family: var(--w-font-sans); font-weight: 700;
+  font-size: 26px; line-height: 1.30; letter-spacing: -0.024em;
+  color: var(--w-label-normal); margin: 0;
+  text-wrap: pretty;
+}
+.ts-h1--display {
+  font-family: var(--w-font-display); font-size: 30px; line-height: 1.20; letter-spacing: -0.028em;
+}
+.ts-h2 {
+  font-size: 18px; font-weight: 700; letter-spacing: -0.005em;
+  color: var(--w-label-normal); margin: 0;
+}
+.ts-sub {
+  font-size: 14px; font-weight: 500; line-height: 1.55;
+  color: var(--w-label-alternative); margin: 0;
+}
+.ts-caption {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.031em;
+  color: var(--w-label-assistive);
+}
+
+/* CTA button */
+.ts-cta {
+  font-family: var(--w-font-sans); font-weight: 700; font-size: 16px;
+  background: var(--w-primary); color: #fff;
+  border: 0; border-radius: 14px;
+  padding: 16px 22px; width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  cursor: pointer;
+}
+.ts-cta--ghost {
+  background: var(--w-fill-normal); color: var(--w-label-normal);
+}
+.ts-cta--ink {
+  background: var(--w-cool-22); color: #fff;
+}
+.ts-cta--accent {
+  background: var(--w-accent-redorange); color: #fff;
+}
+
+/* Pick cards (Flow A — playful) */
+.ts-pickgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ts-pick {
+  background: var(--w-bg-elevated);
+  border: 1px solid var(--w-line-normal);
+  border-radius: 18px;
+  padding: 16px 14px 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  text-align: left;
+  position: relative;
+  cursor: pointer;
+}
+.ts-pick.is-active {
+  border-color: var(--w-primary);
+  background: var(--w-blue-99);
+  box-shadow: 0 0 0 1px var(--w-primary) inset;
+}
+.ts-pick__art {
+  width: 100%; aspect-ratio: 1.2/1; border-radius: 12px;
+  background: var(--w-fill-normal);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; position: relative;
+}
+.ts-pick__title { font-size: 14px; font-weight: 700; letter-spacing: -0.005em; }
+.ts-pick__desc { font-size: 12px; color: var(--w-label-alternative); line-height: 1.4; }
+
+/* Slider (Flow B — data) */
+.ts-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0;
+}
+.ts-row + .ts-row { border-top: 1px solid var(--w-line-alternative); }
+.ts-slider {
+  position: relative; height: 4px; background: var(--w-fill-normal);
+  border-radius: 9999px; margin: 18px 0 8px;
+}
+.ts-slider__fill {
+  position: absolute; top: 0; left: 0; height: 100%;
+  background: var(--w-primary); border-radius: 9999px;
+}
+.ts-slider__thumb {
+  position: absolute; top: 50%; width: 22px; height: 22px;
+  border-radius: 9999px; background: #fff;
+  border: 2px solid var(--w-primary);
+  box-shadow: 0 2px 8px rgba(0,102,255,0.25);
+  transform: translate(-50%, -50%);
+}
+.ts-slider__ticks {
+  display: flex; justify-content: space-between;
+  font-size: 11px; font-weight: 700; color: var(--w-label-alternative);
+  letter-spacing: 0.031em;
+}
+
+/* Character orb (DALL-E placeholder) */
+.ts-orb {
+  width: 100%; aspect-ratio: 1;
+  border-radius: 28px;
+  background: radial-gradient(circle at 32% 28%,
+    var(--orb-hi, #ffd9b8) 0%, var(--orb-mid, #ff9a6c) 40%,
+    var(--orb-lo, #d44e1a) 100%);
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset 0 -16px 32px rgba(0,0,0,0.18),
+    inset 0 8px 18px rgba(255,255,255,0.35);
+}
+.ts-orb::before {
+  content: ""; position: absolute; top: 14%; left: 22%;
+  width: 22%; height: 22%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.7), rgba(255,255,255,0));
+  filter: blur(2px);
+}
+.ts-orb__face {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.ts-orb__tag {
+  position: absolute; left: 14px; bottom: 14px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.05em;
+  color: rgba(0,0,0,0.42); text-transform: uppercase;
+  background: rgba(255,255,255,0.55);
+  padding: 4px 7px; border-radius: 4px;
+}
+
+/* Chip */
+.ts-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--w-fill-normal); color: var(--w-label-normal);
+  padding: 6px 10px; border-radius: 9999px;
+  font-size: 12px; font-weight: 700; letter-spacing: 0.019em;
+  white-space: nowrap;
+}
+.ts-chip--brand { background: rgba(0,102,255,0.10); color: var(--w-primary); }
+.ts-chip--accent { background: rgba(255,94,0,0.10); color: var(--w-accent-redorange); }
+.ts-chip--violet { background: rgba(125,94,247,0.12); color: var(--w-accent-violet); }
+.ts-chip--ink { background: var(--w-cool-22); color: #fff; }
+.ts-chip--outline {
+  background: transparent; color: var(--w-label-alternative);
+  box-shadow: 0 0 0 1px var(--w-line-normal) inset;
+}
+
+/* Card */
+.ts-card {
+  background: var(--w-bg-elevated);
+  border: 1px solid var(--w-line-normal);
+  border-radius: 16px; padding: 16px;
+}
+.ts-card--flat { border-color: var(--w-line-alternative); }
+.ts-card--ink { background: var(--w-cool-22); color: #fff; border-color: var(--w-cool-30); }
+
+/* Timeline (Flow B) */
+.ts-tl { position: relative; padding-left: 28px; }
+.ts-tl::before {
+  content: ""; position: absolute; left: 11px; top: 8px; bottom: 8px;
+  width: 2px; background: var(--w-fill-strong); border-radius: 2px;
+}
+.ts-tl__node {
+  position: relative; padding: 4px 0 16px;
+}
+.ts-tl__dot {
+  position: absolute; left: -22px; top: 6px;
+  width: 14px; height: 14px; border-radius: 9999px;
+  background: var(--w-bg-normal);
+  border: 3px solid var(--w-primary);
+}
+.ts-tl__dot--transit {
+  border-color: var(--w-label-assistive); width: 8px; height: 8px;
+  left: -19px; top: 11px; border-width: 2px;
+}
+.ts-tl__time {
+  font-family: var(--w-font-mono); font-size: 11px; font-weight: 700;
+  color: var(--w-label-alternative); letter-spacing: 0.02em;
+}
+.ts-tl__title { font-size: 15px; font-weight: 700; margin: 1px 0 2px; }
+.ts-tl__meta {
+  font-size: 12px; color: var(--w-label-alternative);
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+}
+.ts-tl__meta span:not(:last-child)::after {
+  content: "·"; margin-left: 8px; color: var(--w-label-disable);
+}
+.ts-tl__transit {
+  display: flex; gap: 10px; align-items: center; padding: 2px 0 10px;
+  font-size: 11px; color: var(--w-label-alternative); font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Log lines (Flow B step 3) */
+.ts-log { font-family: var(--w-font-mono); font-size: 12px; line-height: 1.65; }
+.ts-log__line { display: flex; gap: 10px; padding: 2px 0; align-items: flex-start; }
+.ts-log__check { color: var(--w-status-positive); font-weight: 700; min-width: 14px; }
+.ts-log__pending { color: var(--w-label-assistive); }
+.ts-log__active { color: var(--w-primary); font-weight: 700; }
+
+/* Generic icon helper */
+.ts-icon { width: 16px; height: 16px; filter: brightness(0); opacity: 0.75; }
+.ts-icon--brand { filter: none; }
+
+/* ─── Design canvas header card (the hypothesis briefs) ─── */
+.brief {
+  width: 760px;
+  background: #fff;
+  border: 1px solid var(--w-line-normal);
+  border-radius: 24px;
+  padding: 28px 32px;
+  display: flex; flex-direction: column; gap: 14px;
+  font-family: var(--w-font-sans);
+}
+.brief--a { border-left: 6px solid var(--w-accent-redorange); }
+.brief--b { border-left: 6px solid var(--w-primary); }
+.brief__tag {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  color: var(--w-label-alternative);
+}
+.brief__title {
+  font-size: 24px; font-weight: 700; letter-spacing: -0.02em;
+  color: var(--w-label-normal); margin: 0;
+}
+.brief__sub {
+  font-size: 14px; line-height: 1.62; font-weight: 500;
+  color: var(--w-label-alternative); margin: 0;
+}
+.brief__grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  padding-top: 12px; border-top: 1px solid var(--w-line-alternative);
+}
+.brief__cell h4 {
+  font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--w-label-assistive); margin: 0 0 6px;
+}
+.brief__cell p {
+  font-size: 13px; line-height: 1.5; color: var(--w-label-normal); margin: 0;
+  font-weight: 500;
+}
+
+/* Map mock (Flow B) */
+.ts-map {
+  position: relative;
+  width: 100%; aspect-ratio: 1.4 / 1;
+  border-radius: 14px;
+  background: var(--w-cool-98);
+  overflow: hidden;
+  border: 1px solid var(--w-line-alternative);
+}
+
+/* Stickers / floating badge */
+.ts-sticker {
+  display: inline-flex; padding: 4px 8px; border-radius: 6px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+}
+
+/* Selection ring for input cards */
+.ts-radio {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; border-radius: 12px;
+  border: 1px solid var(--w-line-normal); background: #fff;
+  cursor: pointer;
+}
+.ts-radio.is-active { border-color: var(--w-primary); background: var(--w-blue-99); }
+.ts-radio__title { font-size: 14px; font-weight: 700; }
+.ts-radio__sub { font-size: 12px; color: var(--w-label-alternative); }
+
+/* Gauge */
+.ts-gauge {
+  height: 8px; background: var(--w-fill-normal); border-radius: 9999px;
+  overflow: hidden; position: relative;
+}
+.ts-gauge__fill {
+  height: 100%; border-radius: 9999px;
+  background: linear-gradient(90deg, var(--w-status-positive), var(--w-status-cautionary));
+}

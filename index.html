@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>도쿄 트래블 엔진 — 가설 프로토타입</title>
+<link rel="stylesheet" href="ds/colors_and_type.css" />
+<link rel="stylesheet" href="app.css" />
+<style>
+  html, body { margin: 0; height: 100%; background: #ECEEF1; }
+  /* Subtle DC theming */
+  .dc-canvas-bg { background: #ECEEF1 !important; }
+</style>
+</head>
+<body>
+<div id="root" style="height: 100vh; width: 100vw;"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="flows/shared.jsx"></script>
+<script type="text/babel" src="flows/flow-a.jsx"></script>
+<script type="text/babel" src="flows/flow-b.jsx"></script>
+
+<script type="text/babel">
+function App() {
+  return (
+    <DesignCanvas>
+      {/* ────────────── INTRO ────────────── */}
+      <DCSection
+        id="intro"
+        title="도쿄 트래블 엔진 — 가설 두 개"
+        subtitle="PRD를 읽고 뽑은, 서로 양립하기 어려운 두 가설을 각각 한 플로우로 펼쳐봤어요. 팀 디스커션용."
+      >
+        <DCArtboard id="intro-brief" label="프로젝트 컨텍스트" width={760} height={460}>
+          <div style={{
+            width: "100%", height: "100%", padding: "32px 36px",
+            background: "#fff", borderRadius: 24,
+            border: "1px solid var(--w-line-normal)",
+            fontFamily: "var(--w-font-sans)",
+            display: "flex", flexDirection: "column", gap: 14,
+            boxSizing: "border-box",
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em",
+                          color: "var(--w-label-alternative)" }}>
+              CONTEXT · PRD 요약
+            </div>
+            <h1 style={{
+              fontFamily: "var(--w-font-display)", fontSize: 36, fontWeight: 700,
+              letterSpacing: "-0.025em", lineHeight: 1.2, margin: 0,
+              color: "var(--w-label-normal)", textWrap: "balance",
+            }}>
+              14개 입력으로 도쿄의 "나"를 만들고,<br/>
+              9단계 알고리즘으로 동선을 짜는 서비스.
+            </h1>
+            <p style={{ fontSize: 14, lineHeight: 1.65, color: "var(--w-label-alternative)",
+                        margin: 0, fontWeight: 500 }}>
+              PRD를 읽으면 가치가 두 축에서 동시에 흐릅니다.
+              <b style={{ color: "var(--w-accent-redorange)" }}> ① 취향 캐릭터(identity)</b>
+              — DALL-E로 그린 "도쿄에서의 나"라는 정체성, 그리고
+              <b style={{ color: "var(--w-primary)" }}> ② 동선 실측 신뢰</b>
+              — Google Places 평점/영업시간/요금을 9단계로 검증한 일정.
+              이 두 축은 한 화면에 다 담기에는 정보계층이 충돌해요.
+              그래서 가설을 갈라 두 플로우로 만들어 봤습니다.
+            </p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18,
+                          padding: "14px 0 0", borderTop: "1px solid var(--w-line-alternative)" }}>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <span style={{ width: 24, height: 24, borderRadius: 8,
+                                  background: "var(--w-accent-redorange)", color: "#fff",
+                                  display: "flex", alignItems: "center", justifyContent: "center",
+                                  fontSize: 12, fontWeight: 700 }}>A</span>
+                  <span style={{ fontSize: 14, fontWeight: 700 }}>캐릭터 퍼스트</span>
+                </div>
+                <p style={{ fontSize: 12, lineHeight: 1.55, color: "var(--w-label-alternative)",
+                            margin: 0, fontWeight: 500 }}>
+                  캐릭터 카드가 메인 product. 일정은 캐릭터의 스토리북. 바이럴/공유율 측정.
+                </p>
+              </div>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <span style={{ width: 24, height: 24, borderRadius: 8,
+                                  background: "var(--w-primary)", color: "#fff",
+                                  display: "flex", alignItems: "center", justifyContent: "center",
+                                  fontSize: 12, fontWeight: 700 }}>B</span>
+                  <span style={{ fontSize: 14, fontWeight: 700 }}>동선 실측 퍼스트</span>
+                </div>
+                <p style={{ fontSize: 12, lineHeight: 1.55, color: "var(--w-label-alternative)",
+                            margin: 0, fontWeight: 500 }}>
+                  일정과 알고리즘 투명성이 메인 product. 캐릭터는 작은 라벨. 결제·저장율 측정.
+                </p>
+              </div>
+            </div>
+          </div>
+        </DCArtboard>
+      </DCSection>
+
+      {/* ────────────── HYPOTHESIS A ────────────── */}
+      <DCSection
+        id="flow-a"
+        title="가설 A · 캐릭터 퍼스트"
+        subtitle="14문항을 거쳐 캐릭터가 reveal되는 순간이 product의 메인 이벤트다."
+      >
+        <DCArtboard id="A-brief" label="가설 정의" width={760} height={360}>
+          <Brief
+            kind="a"
+            tag="HYPOTHESIS · A"
+            title="우리가 진짜 파는 건 일정이 아니라 정체성이다."
+            sub="사용자는 14개의 질문에 답하는 동안 자기 자신을 발견할 준비를 한다. 그 끝에 받는 '나의 도쿄 캐릭터'는 일정보다 먼저 attach되고, 그 자체로 공유될 수 있는 객체다. 일정은 캐릭터가 다닌 스토리북으로 따라온다."
+            hyp="reveal 화면에서 '캐릭터 → 일정' 진입율 ≥ 70%, 캐릭터 카드 공유율 ≥ 15%, 친구 캐릭터 연결율 ≥ 5%."
+            kpi="공유 트리거 클릭, SNS 외부 공유율, 친구 합치기 사용, 결과 페이지 7일 재방문율."
+            risk="캐릭터 품질이 균일하지 않으면 첫 인상에서 신뢰 무너짐. DALL-E 비용($0.04/명) × 재발급 요청 폭증 가능."
+          />
+        </DCArtboard>
+
+        <DCArtboard id="A1" label="A1 · Landing — 정체성 hook" width={400} height={820}>
+          <A1_Landing />
+        </DCArtboard>
+        <DCArtboard id="A2" label="A2 · Input — 4분위 mood picker" width={400} height={820}>
+          <A2_Input />
+        </DCArtboard>
+        <DCArtboard id="A3" label="A3 · 캐릭터 빚는 중" width={400} height={820}>
+          <A3_Generating />
+        </DCArtboard>
+        <DCArtboard id="A4" label="A4 · Reveal (메인 이벤트)" width={400} height={820}>
+          <A4_Reveal />
+        </DCArtboard>
+        <DCArtboard id="A5" label="A5 · 친구 캐릭터와 합치기" width={400} height={820}>
+          <A5_Friends />
+        </DCArtboard>
+        <DCArtboard id="A6" label="A6 · 캐릭터의 3박 4일 (스토리북)" width={400} height={820}>
+          <A6_Story />
+        </DCArtboard>
+        <DCArtboard id="A-q" label="팀 디스커션" width={420} height={420}>
+          <Prompt kind="a" items={[
+            "Reveal 화면에서 '일정 보기'가 secondary CTA여도 괜찮을까? 일정 진입율이 낮아지면 가설 자체가 흔들린다.",
+            "캐릭터 재발급 (다시 빚기) 무제한 허용 vs 1회 제한 — 만족도 vs DALL-E 비용 트레이드오프.",
+            "친구 캐릭터 합치기 화면은 별도 화면이 아니라 reveal 직후 인라인 카드로 끌어올려야 할까?",
+            "스토리북 일정에서 실측 데이터(영업시간/요금)는 어디까지 숨길 수 있을까? 캐릭터 톤을 지키면서.",
+            "캐릭터명을 사용자가 직접 편집 가능하게 할까? 정체성의 소유권 vs AI 시그니처.",
+          ]} />
+        </DCArtboard>
+      </DCSection>
+
+      {/* ────────────── HYPOTHESIS B ────────────── */}
+      <DCSection
+        id="flow-b"
+        title="가설 B · 동선 실측 퍼스트"
+        subtitle="AI 일정은 의심받는다. 9단계 알고리즘과 Google Places 실측이 보이지 않으면 저장·결제가 일어나지 않는다."
+      >
+        <DCArtboard id="B-brief" label="가설 정의" width={760} height={360}>
+          <Brief
+            kind="b"
+            tag="HYPOTHESIS · B"
+            title="사용자는 'AI가 만든 일정'을 본능적으로 의심한다."
+            sub="여행은 시간·돈·체력이 걸린 의사결정이라, 사용자는 LLM 출력을 그대로 신뢰하지 않는다. 9단계 알고리즘과 Google Places 실측 데이터를 충분히 노출해서 '추측이 아니라 검증된 결과물'임을 입증해야 결제·저장·공유가 일어난다. 캐릭터는 동선 스코어링에 들어가는 input이지, 메인 product가 아니다."
+            hyp="일정 reveal 후 노드 클릭율 ≥ 60%, 동선 저장율 ≥ 40%, '일정 다시 짜기' 사용율 ≤ 25% (낮을수록 첫 안이 신뢰받는 신호)."
+            kpi="노드 상세 진입, 'Google Places' 메타 노출 후 스크롤 깊이, 저장/공유 클릭, 검증 대시보드 도달율."
+            risk="데이터가 많을수록 처음 화면이 무겁다. 인포-덤프로 느껴지면 첫 10초에 이탈. 캐릭터 약화 시 SNS 바이럴 채널이 사라짐."
+          />
+        </DCArtboard>
+
+        <DCArtboard id="B1" label="B1 · Landing — 신뢰 hook" width={400} height={820}>
+          <B1_Landing />
+        </DCArtboard>
+        <DCArtboard id="B2" label="B2 · Input — 슬라이더 + 라디오" width={400} height={820}>
+          <B2_Input />
+        </DCArtboard>
+        <DCArtboard id="B3" label="B3 · 9단계 알고리즘 라이브" width={400} height={820}>
+          <B3_Live />
+        </DCArtboard>
+        <DCArtboard id="B4" label="B4 · 일정 reveal (지도+타임라인)" width={400} height={820}>
+          <B4_Itinerary />
+        </DCArtboard>
+        <DCArtboard id="B5" label="B5 · 노드 상세 (Places 메타)" width={400} height={820}>
+          <B5_Node />
+        </DCArtboard>
+        <DCArtboard id="B6" label="B6 · 검증 대시보드" width={400} height={820}>
+          <B6_Verify />
+        </DCArtboard>
+        <DCArtboard id="B-q" label="팀 디스커션" width={420} height={420}>
+          <Prompt kind="b" items={[
+            "9단계 알고리즘 라이브 화면은 정말 사용자에게 가치인가, 아니면 우리만의 자아실현인가? 첫 사용자 5명에게 보여주고 표정 보기.",
+            "캐릭터를 '라벨'까지 줄이면, SNS 바이럴 채널이 사라진다. 결제는 늘어도 신규 유저 획득은 어떻게 채울지.",
+            "일정 reveal에서 지도가 먼저인가, 타임라인이 먼저인가? Day 1 default 뷰 결정 필요.",
+            "노드 '왜 추천했나' 카드의 톤 — 알고리즘 언어 (가중 1.0)로 갈지, 큐레이터 언어로 갈지.",
+            "검증 대시보드를 결제 직전에 둘지, 결제 후 '안심 시그널'로 둘지.",
+          ]} />
+        </DCArtboard>
+      </DCSection>
+
+      {/* ────────────── COMPARISON ────────────── */}
+      <DCSection
+        id="compare"
+        title="두 가설의 정면 충돌점"
+        subtitle="A/B로 갈라지는 결정들 — 팀이 합의해야 할 항목들."
+      >
+        <DCArtboard id="compare-card" label="결정해야 할 항목" width={760} height={520}>
+          <div style={{
+            width: "100%", height: "100%", padding: "28px 32px",
+            background: "#fff", borderRadius: 24,
+            border: "1px solid var(--w-line-normal)",
+            fontFamily: "var(--w-font-sans)",
+            boxSizing: "border-box",
+          }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em",
+                          color: "var(--w-label-alternative)", marginBottom: 8 }}>
+              DECISIONS · 합의가 필요한 6개 항목
+            </div>
+            <h2 style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.02em",
+                          margin: "0 0 18px" }}>
+              어느 쪽도 정답은 아니에요. 측정해서 결정해야 해요.
+            </h2>
+            <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr",
+                          fontSize: 12, gap: 0,
+                          border: "1px solid var(--w-line-alternative)", borderRadius: 12,
+                          overflow: "hidden" }}>
+              {[
+                ["축", "A · 캐릭터 퍼스트", "B · 동선 실측 퍼스트", true],
+                ["첫 화면 hook", "정체성 카피 + 오브", "지도 + 신뢰 수치", false],
+                ["가장 긴 시간 보는 화면", "캐릭터 reveal", "일정 reveal (지도+타임라인)", false],
+                ["캐릭터의 역할", "메인 product, 공유 객체", "동선 input + 작은 라벨", false],
+                ["수익화 트리거", "캐릭터 공유 → 친구 합류", "동선 저장 → 결제·내보내기", false],
+                ["DALL-E 비용 부담", "높음 (재발급 허용)", "낮음 (1회·작게 노출)", false],
+                ["로딩 화면 톤", "감성 (빚는 중...)", "투명성 (9단계 진행 로그)", false],
+              ].map((row, i) => (
+                <React.Fragment key={i}>
+                  <div style={{
+                    padding: "12px 14px",
+                    background: row[3] ? "var(--w-bg-alternative)" : "transparent",
+                    borderTop: i === 0 ? "none" : "1px solid var(--w-line-alternative)",
+                    fontWeight: row[3] ? 700 : 700,
+                    fontSize: row[3] ? 11 : 12,
+                    letterSpacing: row[3] ? "0.05em" : "0",
+                    color: row[3] ? "var(--w-label-alternative)" : "var(--w-label-normal)",
+                    textTransform: row[3] ? "uppercase" : "none",
+                  }}>
+                    {row[0]}
+                  </div>
+                  <div style={{
+                    padding: "12px 14px",
+                    background: row[3] ? "rgba(255,94,0,0.06)" : "transparent",
+                    borderTop: i === 0 ? "none" : "1px solid var(--w-line-alternative)",
+                    borderLeft: "1px solid var(--w-line-alternative)",
+                    color: row[3] ? "var(--w-accent-redorange)" : "var(--w-label-normal)",
+                    fontWeight: row[3] ? 700 : 500,
+                    fontSize: row[3] ? 11 : 12,
+                    letterSpacing: row[3] ? "0.05em" : "0",
+                    textTransform: row[3] ? "uppercase" : "none",
+                  }}>
+                    {row[1]}
+                  </div>
+                  <div style={{
+                    padding: "12px 14px",
+                    background: row[3] ? "rgba(0,102,255,0.06)" : "transparent",
+                    borderTop: i === 0 ? "none" : "1px solid var(--w-line-alternative)",
+                    borderLeft: "1px solid var(--w-line-alternative)",
+                    color: row[3] ? "var(--w-primary)" : "var(--w-label-normal)",
+                    fontWeight: row[3] ? 700 : 500,
+                    fontSize: row[3] ? 11 : 12,
+                    letterSpacing: row[3] ? "0.05em" : "0",
+                    textTransform: row[3] ? "uppercase" : "none",
+                  }}>
+                    {row[2]}
+                  </div>
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        </DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+
+</body>
+</html>
