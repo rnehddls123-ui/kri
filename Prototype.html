@@ -8,149 +8,102 @@
 <link rel="stylesheet" href="app.css" />
 <style>
   html, body { margin: 0; height: 100%; background: #ECEEF1; }
-  body {
-    display: flex; align-items: center; justify-content: center;
-    font-family: var(--w-font-sans);
-  }
-  #root {
-    width: 100%; height: 100vh;
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-  }
-  .proto-tag {
-    position: fixed; top: 16px; left: 18px; z-index: 1;
-    font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
-    color: rgba(0,0,0,0.45); text-transform: uppercase;
-    font-family: var(--w-font-sans);
-  }
-  .proto-controls {
-    position: fixed; top: 14px; right: 18px; z-index: 200;
-    display: flex; gap: 8px; align-items: center;
-    font-family: var(--w-font-sans);
-  }
-  .proto-btn {
-    font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
-    color: rgba(0,0,0,0.55); cursor: pointer;
-    background: #fff; border: 1px solid rgba(0,0,0,0.10);
-    padding: 6px 10px; border-radius: 9999px;
-    font-family: var(--w-font-sans); transition: background 120ms;
-  }
+  body { display: flex; align-items: center; justify-content: center; font-family: var(--w-font-sans); }
+  #root { width: 100%; height: 100vh; display: flex; align-items: center; justify-content: center; position: relative; }
+  .proto-tag { position: fixed; top: 16px; left: 18px; z-index: 1; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: rgba(0,0,0,0.45); text-transform: uppercase; }
+  .proto-controls { position: fixed; top: 14px; right: 18px; z-index: 200; display: flex; gap: 8px; align-items: center; }
+  .proto-btn { font-size: 11px; font-weight: 700; color: rgba(0,0,0,0.55); cursor: pointer; background: #fff; border: 1px solid rgba(0,0,0,0.10); padding: 6px 10px; border-radius: 9999px; font-family: var(--w-font-sans); transition: background 120ms; }
   .proto-btn:hover { background: #f5f5f5; }
 
-  /* API Key settings panel */
-  .api-panel {
-    position: fixed; top: 52px; right: 18px; z-index: 300;
-    background: #fff; border-radius: 20px;
-    border: 1px solid rgba(0,0,0,0.10);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.14), 0 2px 8px rgba(0,0,0,0.07);
-    padding: 20px; width: 326px;
-    font-family: var(--w-font-sans);
-    display: none;
-  }
+  .api-panel { position: fixed; top: 52px; right: 18px; z-index: 300; background: #fff; border-radius: 20px; border: 1px solid rgba(0,0,0,0.10); box-shadow: 0 8px 32px rgba(0,0,0,0.14); padding: 20px; width: 340px; font-family: var(--w-font-sans); display: none; }
   .api-panel.is-open { display: block; animation: panelIn 180ms ease; }
-  @keyframes panelIn {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .api-panel h3 {
-    margin: 0 0 4px; font-size: 15px; font-weight: 700;
-    color: #1B1C1E; letter-spacing: -0.01em;
-  }
-  .api-panel > p {
-    margin: 0 0 14px; font-size: 12px; color: rgba(55,56,60,0.61);
-    line-height: 1.5;
-  }
-  .api-feature-list {
-    display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px;
-  }
-  .api-feature {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 12px; color: rgba(55,56,60,0.72); font-weight: 500;
-  }
-  .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-  .dot--a { background: #FF5E00; }
-  .dot--o { background: #0066FF; }
-  .api-divider { border: 0; border-top: 1px solid rgba(112,115,124,0.10); margin: 14px 0; }
-  .api-label {
-    font-size: 11px; font-weight: 700; letter-spacing: 0.05em;
-    text-transform: uppercase; color: rgba(55,56,60,0.61);
-    margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;
-  }
-  .api-badge {
-    font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
-    padding: 2px 6px; border-radius: 4px; text-transform: uppercase;
-  }
-  .api-badge--req { background: rgba(255,94,0,0.12); color: #FF5E00; }
-  .api-badge--opt { background: rgba(0,102,255,0.10); color: #0066FF; }
-  .api-badge--ok  { background: rgba(0,191,64,0.12); color: #00BF40; }
-  .api-input {
-    width: 100%; box-sizing: border-box;
-    padding: 10px 12px; border-radius: 10px;
-    border: 1px solid rgba(112,115,124,0.22);
-    font-family: var(--w-font-mono); font-size: 12px;
-    color: #1B1C1E; background: #fff;
-    outline: none; margin-bottom: 12px; transition: border-color 150ms;
-  }
+  @keyframes panelIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+  .api-panel h3 { margin: 0 0 4px; font-size: 15px; font-weight: 700; color: #1B1C1E; }
+  .api-panel > p { margin: 0 0 14px; font-size: 12px; color: rgba(55,56,60,0.61); line-height: 1.5; }
+  .api-provider-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .api-tab { flex: 1; padding: 8px 4px; border-radius: 8px; border: 1px solid rgba(112,115,124,0.22); background: #fff; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; color: rgba(55,56,60,0.61); transition: all 120ms; }
+  .api-tab.active { background: #1B1C1E; color: #fff; border-color: #1B1C1E; }
+  .api-tab-hint { font-size: 10px; font-weight: 500; color: rgba(55,56,60,0.45); display: block; margin-top: 2px; }
+  .api-section { display: none; }
+  .api-section.active { display: block; }
+  .api-label { font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: rgba(55,56,60,0.61); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+  .api-badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+  .api-badge--ok { background: rgba(0,191,64,0.12); color: #00BF40; }
+  .api-badge--empty { background: rgba(112,115,124,0.10); color: rgba(55,56,60,0.45); }
+  .api-input { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(112,115,124,0.22); font-family: var(--w-font-mono); font-size: 12px; color: #1B1C1E; background: #fff; outline: none; margin-bottom: 12px; transition: border-color 150ms; }
   .api-input:focus { border-color: #0066FF; box-shadow: 0 0 0 3px rgba(0,102,255,0.1); }
-  .api-save {
-    width: 100%; padding: 12px; border-radius: 10px;
-    background: #1B1C1E; color: #fff; border: 0;
-    font-family: var(--w-font-sans); font-weight: 700; font-size: 14px;
-    cursor: pointer; transition: background 120ms;
-  }
-  .api-save:hover { background: #2E2F33; }
-  .api-note {
-    margin-top: 10px; font-size: 11px; color: rgba(55,56,60,0.45);
-    line-height: 1.5; text-align: center;
-  }
+  .api-save { width: 100%; padding: 12px; border-radius: 10px; background: #1B1C1E; color: #fff; border: 0; font-family: var(--w-font-sans); font-weight: 700; font-size: 14px; cursor: pointer; }
+  .api-note { margin-top: 10px; font-size: 11px; color: rgba(55,56,60,0.45); line-height: 1.5; text-align: center; }
+  .api-divider { border: 0; border-top: 1px solid rgba(112,115,124,0.10); margin: 14px 0; }
+  .provider-status { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--w-bg-alternative, #F4F4F5); margin-bottom: 12px; font-size: 12px; font-weight: 600; color: #1B1C1E; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot--on { background: #00BF40; }
+  .dot--off { background: rgba(112,115,124,0.3); }
 </style>
 </head>
 <body>
 
 <div class="proto-tag">도쿄 트래블 엔진 · AI 프로토타입</div>
-
 <div class="proto-controls">
   <button class="proto-btn" onclick="window.__protoReset && window.__protoReset()">처음으로</button>
   <button class="proto-btn" id="settings-btn" onclick="toggleSettings()">⚙ API 설정</button>
 </div>
 
-<!-- API Settings Panel -->
 <div class="api-panel" id="api-panel">
   <h3>AI 연동 설정</h3>
-  <p>실제 Claude + DALL-E 3로 캐릭터·이미지·카피를 생성해요.<br>키 없이도 목 데이터로 작동해요.</p>
+  <p>아래 중 하나를 선택해 키를 입력하면 실제 AI가 캐릭터·일정을 생성해요.</p>
 
-  <div class="api-feature-list">
-    <div class="api-feature">
-      <span class="dot dot--a"></span>
-      캐릭터명 · 키워드 · 색상 생성 — Claude Haiku
-    </div>
-    <div class="api-feature">
-      <span class="dot dot--a"></span>
-      일정 에디토리얼 카피 생성 — Claude Sonnet
-    </div>
-    <div class="api-feature">
-      <span class="dot dot--o"></span>
-      캐릭터 3D 클레이 이미지 — DALL-E 3
-    </div>
+  <!-- Provider tabs -->
+  <div class="api-provider-tabs">
+    <button class="api-tab active" onclick="switchTab('gemini')" id="tab-gemini">
+      Gemini
+      <span class="api-tab-hint">AIza…</span>
+    </button>
+    <button class="api-tab" onclick="switchTab('anthropic')" id="tab-anthropic">
+      Claude
+      <span class="api-tab-hint">sk-ant-…</span>
+    </button>
+    <button class="api-tab" onclick="switchTab('openai')" id="tab-openai">
+      GPT
+      <span class="api-tab-hint">sk-proj-…</span>
+    </button>
+  </div>
+
+  <!-- Gemini section -->
+  <div class="api-section active" id="section-gemini">
+    <div class="api-label">Gemini API Key <span class="api-badge" id="badge-gemini">미입력</span></div>
+    <input type="password" class="api-input" id="key-gemini" placeholder="AIzaSy…" oninput="updateBadge('gemini')" />
+    <p style="font-size:11px;color:rgba(55,56,60,0.5);margin:0 0 12px;line-height:1.5;">
+      ✅ 캐릭터 생성 &nbsp;✅ 일정 생성 &nbsp;✅ 카피 생성<br>
+      Google AI Studio에서 무료로 발급 가능해요.
+    </p>
+  </div>
+
+  <!-- Anthropic section -->
+  <div class="api-section" id="section-anthropic">
+    <div class="api-label">Claude API Key <span class="api-badge" id="badge-anthropic">미입력</span></div>
+    <input type="password" class="api-input" id="key-anthropic" placeholder="sk-ant-api03-…" oninput="updateBadge('anthropic')" />
+    <p style="font-size:11px;color:rgba(55,56,60,0.5);margin:0 0 12px;line-height:1.5;">
+      ✅ 캐릭터 생성 &nbsp;✅ 일정 생성 &nbsp;✅ 카피 생성
+    </p>
+  </div>
+
+  <!-- OpenAI section -->
+  <div class="api-section" id="section-openai">
+    <div class="api-label">OpenAI API Key <span class="api-badge" id="badge-openai">미입력</span></div>
+    <input type="password" class="api-input" id="key-openai" placeholder="sk-proj-…" oninput="updateBadge('openai')" />
+    <p style="font-size:11px;color:rgba(55,56,60,0.5);margin:0 0 12px;line-height:1.5;">
+      ✅ 캐릭터 생성 &nbsp;✅ 일정 생성 &nbsp;✅ DALL-E 3 이미지
+    </p>
   </div>
 
   <hr class="api-divider" />
 
-  <div class="api-label">
-    Anthropic API Key
-    <span class="api-badge api-badge--req" id="anthropic-badge">필수</span>
+  <!-- Current status -->
+  <div id="provider-status" class="provider-status">
+    <span class="dot dot--off"></span>
+    <span>AI 키 없음 — 목 데이터로 작동 중</span>
   </div>
-  <input type="password" class="api-input" id="anthropic-key"
-    placeholder="sk-ant-api03-…"
-    oninput="updateBadge('anthropic')" />
-
-  <div class="api-label">
-    OpenAI API Key
-    <span class="api-badge api-badge--opt" id="openai-badge">선택 · 이미지</span>
-  </div>
-  <input type="password" class="api-input" id="openai-key"
-    placeholder="sk-proj-…"
-    oninput="updateBadge('openai')" />
 
   <button class="api-save" onclick="saveApiKeys()">저장하기</button>
   <p class="api-note">🔒 로컬스토리지에만 저장 · 외부 서버 전송 없음</p>
@@ -159,43 +112,66 @@
 <div id="root"></div>
 
 <script>
-  // ── API Key Management ─────────────────────────────────────
+  // ── API Key storage ─────────────────────────────────────────
   window.__apiKeys = {
+    gemini:    localStorage.getItem('kri_gemini_key')    || '',
     anthropic: localStorage.getItem('kri_anthropic_key') || '',
-    openai:    localStorage.getItem('kri_openai_key') || '',
+    openai:    localStorage.getItem('kri_openai_key')    || '',
   };
+
+  function getActiveProvider() {
+    if (window.__apiKeys.gemini)    return 'gemini';
+    if (window.__apiKeys.anthropic) return 'anthropic';
+    if (window.__apiKeys.openai)    return 'openai';
+    return null;
+  }
+
+  function updateProviderStatus() {
+    const p = getActiveProvider();
+    const el = document.getElementById('provider-status');
+    if (!el) return;
+    const labels = { gemini: 'Gemini 연결됨 — AI 생성 활성화', anthropic: 'Claude 연결됨 — AI 생성 활성화', openai: 'GPT 연결됨 — AI 생성 활성화' };
+    if (p) {
+      el.innerHTML = `<span class="dot dot--on"></span><span>${labels[p]}</span>`;
+    } else {
+      el.innerHTML = `<span class="dot dot--off"></span><span>AI 키 없음 — 목 데이터로 작동 중</span>`;
+    }
+  }
+
+  function switchTab(provider) {
+    ['gemini','anthropic','openai'].forEach(p => {
+      document.getElementById('tab-' + p).classList.toggle('active', p === provider);
+      document.getElementById('section-' + p).classList.toggle('active', p === provider);
+    });
+  }
+
+  function updateBadge(type) {
+    const val   = document.getElementById('key-' + type).value.trim();
+    const badge = document.getElementById('badge-' + type);
+    badge.textContent = val.length > 6 ? '✓ 입력됨' : '미입력';
+    badge.className   = val.length > 6 ? 'api-badge api-badge--ok' : 'api-badge api-badge--empty';
+  }
 
   function toggleSettings() {
     const panel = document.getElementById('api-panel');
     panel.classList.toggle('is-open');
     if (panel.classList.contains('is-open')) {
-      document.getElementById('anthropic-key').value = window.__apiKeys.anthropic || '';
-      document.getElementById('openai-key').value    = window.__apiKeys.openai    || '';
-      updateBadge('anthropic');
-      updateBadge('openai');
-    }
-  }
-
-  function updateBadge(type) {
-    const val   = document.getElementById(type + '-key').value.trim();
-    const badge = document.getElementById(type + '-badge');
-    if (val.length > 10) {
-      badge.textContent = '✓ 입력됨';
-      badge.className   = 'api-badge api-badge--ok';
-    } else if (type === 'anthropic') {
-      badge.textContent = '필수';
-      badge.className   = 'api-badge api-badge--req';
-    } else {
-      badge.textContent = '선택 · 이미지';
-      badge.className   = 'api-badge api-badge--opt';
+      document.getElementById('key-gemini').value    = window.__apiKeys.gemini    || '';
+      document.getElementById('key-anthropic').value = window.__apiKeys.anthropic || '';
+      document.getElementById('key-openai').value    = window.__apiKeys.openai    || '';
+      ['gemini','anthropic','openai'].forEach(updateBadge);
+      updateProviderStatus();
     }
   }
 
   function saveApiKeys() {
-    const ak = document.getElementById('anthropic-key').value.trim();
-    const ok = document.getElementById('openai-key').value.trim();
-    if (ak) { localStorage.setItem('kri_anthropic_key', ak); window.__apiKeys.anthropic = ak; }
-    if (ok) { localStorage.setItem('kri_openai_key',    ok); window.__apiKeys.openai    = ok; }
+    ['gemini','anthropic','openai'].forEach(type => {
+      const val = document.getElementById('key-' + type).value.trim();
+      window.__apiKeys[type] = val;
+      if (val) localStorage.setItem('kri_' + type + '_key', val);
+      else     localStorage.removeItem('kri_' + type + '_key');
+    });
+    updateProviderStatus();
     document.getElementById('api-panel').classList.remove('is-open');
     const btn = document.getElementById('settings-btn');
     btn.textContent = '✓ 저장됨';
@@ -205,21 +181,18 @@
   document.addEventListener('click', (e) => {
     const panel = document.getElementById('api-panel');
     const btn   = document.getElementById('settings-btn');
-    if (!panel.contains(e.target) && e.target !== btn) {
-      panel.classList.remove('is-open');
-    }
+    if (!panel.contains(e.target) && e.target !== btn) panel.classList.remove('is-open');
   });
+
+  updateProviderStatus();
 </script>
 
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js"
-  integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L"
-  crossorigin="anonymous"></script>
+  integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"
-  integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm"
-  crossorigin="anonymous"></script>
+  integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"
-  integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y"
-  crossorigin="anonymous"></script>
+  integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
 <script type="text/babel" src="ios-frame.jsx"></script>
 <script type="text/babel" src="proto/data.jsx"></script>
@@ -230,6 +203,5 @@
 <script type="text/babel" src="proto/screens/place.jsx"></script>
 <script type="text/babel" src="proto/screens/itinerary.jsx"></script>
 <script type="text/babel" src="proto/app.jsx"></script>
-
 </body>
 </html>
