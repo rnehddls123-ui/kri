@@ -1,6 +1,6 @@
 // Place detail — slide-up sheet modal
 function PlaceDetail({ placeId, character, onClose }) {
-  const p = PLACES[placeId];
+  const p = (window.__runtimePlaces || PLACES)[placeId];
   if (!p) return null;
   // animate in on mount
   const [open, setOpen] = useState(false);
@@ -50,14 +50,19 @@ function PlaceDetail({ placeId, character, onClose }) {
             margin: "8px 16px 0", height: 168, borderRadius: 18,
             background: heroBg, position: "relative", overflow: "hidden",
           }}>
+            {/* Real Google Maps photo (GMaps live places) */}
+            {p.photoUrl && (
+              <img src={p.photoUrl} alt={p.name}
+                style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }} />
+            )}
             <div style={{
               position: "absolute", left: 14, bottom: 12,
               padding: "5px 9px", borderRadius: 6,
-              background: "rgba(0,0,0,0.42)", color: "#fff",
+              background: "rgba(0,0,0,0.52)", color: "#fff",
               fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
               fontFamily: "var(--w-font-mono)",
             }}>
-              GOOGLE PLACES · {placeId}
+              {p.source === 'gmaps' ? '📍 GOOGLE MAPS LIVE' : 'GOOGLE PLACES · ' + placeId}
             </div>
             <button onClick={close} style={{
               position: "absolute", top: 12, right: 12,
@@ -145,7 +150,15 @@ function PlaceDetail({ placeId, character, onClose }) {
               </button>
             </div>
             <div style={{ height: 8 }} />
-            <button style={{
+            <button
+              onClick={() => {
+                const pp = (window.__runtimePlaces || PLACES)[placeId];
+                const url = pp?.gmapsId
+                  ? `https://www.google.com/maps/place/?q=place_id:${pp.gmapsId}`
+                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((pp?.name || '') + ' ' + (pp?.region || '') + ' 도쿄')}`;
+                window.open(url, '_blank');
+              }}
+              style={{
               width: "100%", padding: "14px 20px", borderRadius: 14, border: 0,
               background: "var(--w-cool-22)", color: "#fff",
               fontFamily: "var(--w-font-sans)", fontWeight: 700, fontSize: 15,

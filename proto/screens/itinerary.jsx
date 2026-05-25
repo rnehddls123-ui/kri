@@ -5,6 +5,7 @@ function Itinerary({ character, inputs, onBack, openPlace, onOpenPlace, onCloseP
   const [liveItin, setLiveItin] = useState(null);
   const [day, setDay]           = useState(1);
   const [usedProvider, setUsedProvider] = useState(null);
+  const [gmapsCount, setGmapsCount]     = useState(0);
 
   // ── Generate dynamic itinerary via LLM ──────────────────────
   useEffect(() => {
@@ -19,11 +20,35 @@ function Itinerary({ character, inputs, onBack, openPlace, onOpenPlace, onCloseP
       const depDate = new Date(inputs.depDate || '2025-11-25');
       const numDays = Math.max(2, Math.round((depDate - arrDate) / (1000*60*60*24)) + 1);
 
+      // ── Step 1: Fetch real places from Google Maps Places API ──
+      let dynamicPlaces = null;
+      if (window.__apiKeys?.maps && window.__mapsReady) {
+        try {
+          dynamicPlaces = await fetchTokyoPlaces(inputs);
+          if (dynamicPlaces) {
+            const cnt = Object.keys(dynamicPlaces).length;
+            if (!cancelled) setGmapsCount(cnt);
+            console.log(`[Itinerary] GMaps Places: ${cnt}개 실시간 장소 수신`);
+          }
+        } catch (err) {
+          console.warn('[Itinerary] GMaps Places fetch 실패:', err.message);
+        }
+      }
+
+      // Merge: dynamic (GMaps) + hardcoded fallback
+      // Dynamic places override hardcoded ones with same id (won't clash — different key prefix)
+      const activePlaces = dynamicPlaces
+        ? { ...PLACES, ...dynamicPlaces }
+        : PLACES;
+
+      // Store globally so PlaceRow / PlaceDetail can read dynamic places by id
+      window.__runtimePlaces = activePlaces;
+
       let result = null;
 
       if (provider) {
         try {
-          const placeList = Object.entries(PLACES)
+          const placeList = Object.entries(activePlaces)
             .map(([id, p]) => `${id} | ${p.name} | ${p.region} | ${p.category} | 가격:${p.price}`)
             .join('\n');
 
@@ -80,7 +105,7 @@ JSON 형식 (days 배열 ${numDays}개):
 
           const d = parseJSON(text);
           if (d.days && Array.isArray(d.days) && d.days.length > 0) {
-            result = buildItinerary(d.days, inputs, PLACES);
+            result = buildItinerary(d.days, inputs, activePlaces);
             if (!cancelled) setUsedProvider(provider);
           }
         } catch (err) {
@@ -107,9 +132,10 @@ JSON 형식 (days 배열 ${numDays}개):
 
   const dayData    = liveItin.days.find(d => d.idx === day) || liveItin.days[0];
   const placeNodes = dayData.nodes.filter(n => n.type === 'place');
+  const allP       = window.__runtimePlaces || PLACES;
   const pins       = placeNodes
     .map((n, i) => {
-      const p = PLACES[n.id];
+      const p = allP[n.id];
       if (!p) return null;
       return { lat: p.lat, lng: p.lng, id: n.id, label: String(i + 1), name: p.name };
     })
@@ -155,10 +181,12 @@ JSON 형식 (days 배열 ${numDays}개):
         </div>
       </div>
 
-      {/* AI badge — shown only when AI actually generated the schedule */}
-      {providerLabel && (
-        <div style={{ margin:'0 20px 10px', padding:'6px 12px', borderRadius:8, background:'rgba(255,94,0,0.07)', border:'1px solid rgba(255,94,0,0.15)', display:'flex', alignItems:'center', gap:6, fontSize:11, fontWeight:700, color:'var(--w-accent-redorange)', letterSpacing:'0.04em' }}>
-          ✦ {providerLabel}가 취향에 맞게 장소를 골랐어요
+      {/* AI + GMaps badge */}
+      {(providerLabel || gmapsCount > 0) && (
+        <div style={{ margin:'0 20px 10px', padding:'6px 12px', borderRadius:8, background:'rgba(255,94,0,0.07)', border:'1px solid rgba(255,94,0,0.15)', display:'flex', alignItems:'center', gap:6, fontSize:11, fontWeight:700, color:'var(--w-accent-redorange)', letterSpacing:'0.04em', flexWrap:'wrap' }}>
+          {gmapsCount > 0 && <span>📍 구글맵 실시간 {gmapsCount}개 장소</span>}
+          {gmapsCount > 0 && providerLabel && <span style={{ opacity:0.5 }}>·</span>}
+          {providerLabel && <span>✦ {providerLabel}가 취향으로 동선 완성</span>}
         </div>
       )}
 
@@ -289,7 +317,7 @@ function StayRow({ n }) {
 }
 
 function PlaceRow({ n, num, onOpen }) {
-  const p = PLACES[n.id];
+  const p = (window.__runtimePlaces || PLACES)[n.id];
   if (!p) return null;
   return (
     <button onClick={() => onOpen(n.id)}
@@ -321,10 +349,10 @@ function GeneratingItin() {
   // uses hasGemini() directly
 
   const steps = [
+    window.__apiKeys?.maps ? '구글맵 실시간 장소 데이터 수신 중' : '취향 카테고리 · 장소 라이브러리 로딩',
     '취향 벡터 추출 · 카테고리 가중치 계산',
     '일별 권역 할당 (이동 최소화)',
-    '장소 스코어링 (메인 1.0 / 서브 0.4)',
-    '영업시간 · 이동시간 충돌 검사',
+    '장소 스코어링 · 동선 최적화',
     '에디토리얼 카피 · 최종 일정 완성',
   ];
 

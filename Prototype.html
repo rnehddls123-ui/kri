@@ -103,7 +103,7 @@
     window.__mapsLoading = true;
     window.__mapsInitCallback = function() { window.__mapsReady = true; };
     var s = document.createElement('script');
-    s.src = 'https://maps.googleapis.com/maps/api/js?key=' + key + '&callback=__mapsInitCallback&v=weekly';
+    s.src = 'https://maps.googleapis.com/maps/api/js?key=' + key + '&callback=__mapsInitCallback&v=weekly&libraries=places';
     s.async = true;
     s.onerror = function() { console.warn('Google Maps failed to load'); window.__mapsLoading = false; };
     document.head.appendChild(s);

@@ -183,7 +183,117 @@ function buildItinerary(aiDays, inputs, PLACES) {
   };
 }
 
-Object.assign(window, { callLLM, parseJSON, callImageGen, canGenerateImage, imageProviderLabel, sleep, hasGemini, buildItinerary, addMin, buildDayNodes });
+// ══════════════════════════════════════════════════════════════
+// Google Maps Places API — real Tokyo place fetching
+// ══════════════════════════════════════════════════════════════
+
+// Category → Japanese search queries (better Places API results)
+const CAT_QUERIES = {
+  "음식·맛집":      "東京 人気 グルメ レストラン",
+  "카페·디저트":    "東京 おしゃれ カフェ スペシャルティコーヒー",
+  "쇼핑·편집샵":    "東京 セレクトショップ ファッション",
+  "플리마켓·빈티지": "東京 ヴィンテージ 古着 下北沢",
+  "예술·전시":      "東京 美術館 アート ギャラリー",
+  "문화·역사·신사":  "東京 神社 寺院 文化財 歴史",
+  "서브컬처":       "秋葉原 アニメ マンガ サブカルチャー",
+  "자연·공원":      "東京 公園 庭園 散策",
+  "야경·뷰":        "東京 夜景 展望台 絶景スポット",
+  "체험·액티비티":   "東京 体験 アクティビティ ワークショップ",
+  "온천·휴식":      "東京 銭湯 温泉 スパ",
+  "근교·당일":      "東京近郊 鎌倉 箱根 日帰り観光",
+  "현지인 골목":    "東京 商店街 下町 路地裏 ローカル",
+};
+
+function gmapsPriceLabel(lvl) {
+  if (lvl == null) return "보통";
+  if (lvl <= 1) return "절약";
+  if (lvl === 2) return "보통";
+  return "프리미엄";
+}
+
+function gmapsRegion(place) {
+  const v = place.vicinity || place.formatted_address || "";
+  const MAP = {
+    "渋谷":"시부야",    "新宿":"신주쿠",        "浅草":"아사쿠사",
+    "秋葉原":"아키하바라", "上野":"우에노",       "下北沢":"시모키타자와",
+    "代官山":"다이칸야마", "中目黒":"나카메구로",  "六本木":"롯폰기",
+    "銀座":"긴자",      "原宿":"하라주쿠",       "表参道":"오모테산도",
+    "池袋":"이케부쿠로",  "谷中":"야네센",        "台場":"오다이바",
+    "恵比寿":"에비스",   "目黒":"메구로",        "品川":"시나가와",
+    "豊洲":"도요스",    "清澄白河":"기요스미",    "蔵前":"구라마에",
+    "神保町":"진보초",  "御茶ノ水":"오차노미즈", "吉祥寺":"기치조지",
+  };
+  for (const [jp, kr] of Object.entries(MAP)) {
+    if (v.includes(jp)) return kr;
+  }
+  return "도쿄";
+}
+
+// Fetch real Tokyo places from Google Maps Places API
+// Returns a PLACES-compatible object keyed by gm_<placeId>
+async function fetchTokyoPlaces(inputs) {
+  if (!window.__mapsReady) return null;
+  const GP = window.google?.maps?.places;
+  if (!GP?.PlacesService) {
+    console.warn('[Places] PlacesService unavailable — did you load libraries=places?');
+    return null;
+  }
+
+  const svcDiv = document.createElement('div');
+  const service = new GP.PlacesService(svcDiv);
+  const center  = new window.google.maps.LatLng(35.6762, 139.7320); // central Tokyo
+
+  const cats = [inputs.categoryMain, inputs.categorySub].filter(Boolean);
+  const allPlaces = {};
+
+  for (const cat of cats) {
+    const query = CAT_QUERIES[cat];
+    if (!query) continue;
+    try {
+      const results = await new Promise((resolve, reject) => {
+        service.textSearch(
+          { query, location: center, radius: 10000 },
+          (r, status) => {
+            if (status === GP.PlacesServiceStatus.OK && r?.length) resolve(r);
+            else reject(new Error(`Places API: ${status}`));
+          }
+        );
+      });
+
+      for (const place of results.slice(0, 10)) {
+        if (!place.place_id || !place.geometry?.location) continue;
+        if (place.business_status && place.business_status !== 'OPERATIONAL') continue;
+        const id = `gm_${place.place_id.slice(-10)}`;
+        if (allPlaces[id]) continue; // deduplicate across categories
+
+        allPlaces[id] = {
+          name:     place.name,
+          region:   gmapsRegion(place),
+          category: cat,
+          rating:   place.rating ?? 4.0,
+          reviews:  place.user_ratings_total ?? 0,
+          price:    gmapsPriceLabel(place.price_level),
+          open:     "구글맵에서 확인",
+          stay:     60,
+          lat:      place.geometry.location.lat(),
+          lng:      place.geometry.location.lng(),
+          info:     `${place.name} — ${place.vicinity || '도쿄'} (구글 평점 ${place.rating ?? '-'}점, 리뷰 ${(place.user_ratings_total ?? 0).toLocaleString()}명)`,
+          why:      `${cat} 취향에 맞는 장소예요. 구글 리뷰 ${(place.user_ratings_total ?? 0).toLocaleString()}명이 추천해요.`,
+          gmapsId:  place.place_id,
+          photoUrl: place.photos?.[0]?.getUrl({ maxWidth: 600, maxHeight: 400 }) || null,
+          source:   'gmaps',
+        };
+      }
+      console.log(`[Places] "${cat}" → ${results.length}건 수신`);
+    } catch (err) {
+      console.warn(`[Places] "${cat}" 검색 실패:`, err.message);
+    }
+  }
+
+  return Object.keys(allPlaces).length > 0 ? allPlaces : null;
+}
+
+Object.assign(window, { callLLM, parseJSON, callImageGen, canGenerateImage, imageProviderLabel, sleep, hasGemini, buildItinerary, addMin, buildDayNodes, fetchTokyoPlaces, CAT_QUERIES });
 
 // ══════════════════════════════════════════════════════════════
 // Google Maps component
