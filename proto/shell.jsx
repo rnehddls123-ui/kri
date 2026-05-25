@@ -35,9 +35,10 @@ function parseJSON(text) {
 }
 
 // Imagen 3 image generation via Gemini API
-async function callImageGen(prompt) {
-  if (!hasGemini()) throw new Error('Gemini 키가 없어요');
+// Imagen 3 via Gemini API
+async function callGeminiImage(prompt) {
   const key = window.__apiKeys.gemini;
+  if (!key) throw new Error('No Gemini key');
   const res = await fetch(
     `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-001:predict?key=${key}`,
     {
@@ -52,9 +53,43 @@ async function callImageGen(prompt) {
   if (!res.ok) { const e = await res.json().catch(()=>{}); throw new Error(e?.error?.message || `Imagen HTTP ${res.status}`); }
   const data = await res.json();
   const b64  = data.predictions?.[0]?.bytesBase64Encoded;
-  if (!b64) throw new Error('Imagen returned no image data');
+  if (!b64) throw new Error('Imagen: no image data');
   const mime = data.predictions?.[0]?.mimeType || 'image/png';
   return `data:${mime};base64,${b64}`;
+}
+
+// Gemini 2.0 Flash native image generation (free tier compatible)
+async function callGeminiFlashImage(prompt) {
+  const key = window.__apiKeys.gemini;
+  if (!key) throw new Error('No Gemini key');
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${key}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+      }),
+    }
+  );
+  if (!res.ok) { const e = await res.json().catch(()=>{}); throw new Error(e?.error?.message || `Flash Image HTTP ${res.status}`); }
+  const data = await res.json();
+  const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+  if (!imagePart?.inlineData?.data) throw new Error('Flash: no image data');
+  const { data: b64, mimeType: mime } = imagePart.inlineData;
+  return `data:${mime || 'image/png'};base64,${b64}`;
+}
+
+// Universal: tries Imagen 3, falls back to Gemini Flash image
+async function callImageGen(prompt) {
+  if (!hasGemini()) throw new Error('Gemini 키가 없어요');
+  try {
+    return await callGeminiImage(prompt);
+  } catch (e1) {
+    console.warn('[Image] Imagen 3 failed, trying Flash:', e1.message);
+    return await callGeminiFlashImage(prompt);
+  }
 }
 
 function canGenerateImage() { return hasGemini(); }
@@ -69,10 +104,10 @@ function addMin(time, min) {
   return `${String(Math.floor(t/60)%24).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
 }
 
-function buildDayNodes(placeIds, dayIdx, inputs, PLACES) {
+function buildDayNodes(placeIds, dayIdx, totalDays, inputs, PLACES) {
   const nodes = [];
   const isArrival   = dayIdx === 1;
-  const isDeparture = dayIdx === 4;
+  const isDeparture = dayIdx === totalDays;   // dynamic — not hardcoded to 4
   const arrAirport  = inputs.arrAirport || 'NRT';
   const depAirport  = inputs.depAirport || 'NRT';
   const arrTime     = inputs.arrTime    || '14:30';
@@ -142,7 +177,7 @@ function buildItinerary(aiDays, inputs, PLACES) {
         fatigue: d.fatigue || (4 + i * 0.5),
         budget:  d.budget  || 12000,
         walking: d.walking || 40,
-        nodes:   buildDayNodes(validIds, i+1, inputs, PLACES),
+        nodes:   buildDayNodes(validIds, i+1, aiDays.length, inputs, PLACES),
       };
     }),
   };
