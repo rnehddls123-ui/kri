@@ -430,16 +430,12 @@ function CategoryBothCard({ inputs, patch }) {
 
   function handleChip(c) {
     if (c === main) {
-      // Tap main → clear both
       patch({ categoryMain: null, categorySub: null });
     } else if (c === sub) {
-      // Tap sub → clear sub only
       patch({ categorySub: null });
     } else if (!main) {
-      // No main yet → set main
       patch({ categoryMain: c, categorySub: null });
     } else {
-      // Main is set, pick sub
       patch({ categorySub: c });
     }
   }
@@ -459,45 +455,63 @@ function CategoryBothCard({ inputs, patch }) {
   return (
     <>
       <Eyebrow>관심 · 취향</Eyebrow>
-      <div style={{ height: 8 }} />
-      <Heading><span style={{ whiteSpace: "pre-line" }}>{phaseTitle}</span></Heading>
-      <div style={{ height: 8 }} />
+      <div style={{ height:8 }} />
+      <Heading><span style={{ whiteSpace:'pre-line' }}>{phaseTitle}</span></Heading>
+      <div style={{ height:8 }} />
       <Sub>{phaseSub}</Sub>
-      <div style={{ height: 18 }} />
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignContent: "flex-start" }}>
+      {/* Selected summary */}
+      {(main || sub) && (
+        <div style={{ marginTop:12, display:'flex', gap:6, alignItems:'center', padding:'8px 12px', borderRadius:10, background:'var(--w-bg-alternative)' }}>
+          {main && (
+            <span style={{ fontSize:10, fontWeight:700, color:'var(--w-label-alternative)', letterSpacing:'0.04em' }}>M</span>
+          )}
+          {main && <CategoryTag cat={main} size='sm' />}
+          {sub && <span style={{ fontSize:10, color:'var(--w-label-disable)' }}>+</span>}
+          {sub && (
+            <>
+              <span style={{ fontSize:10, fontWeight:700, color:'var(--w-label-alternative)', letterSpacing:'0.04em' }}>S</span>
+              <CategoryTag cat={sub} size='sm' />
+            </>
+          )}
+        </div>
+      )}
+
+      <div style={{ height:16 }} />
+
+      <div style={{ display:'flex', flexWrap:'wrap', gap:7, alignContent:'flex-start' }}>
         {OPT.categories.map((c) => {
           const isMain = c === main;
           const isSub  = c === sub;
-          // Visual states
-          let bg, color, border, opacity;
+          const catC   = (typeof CAT_COLOR !== 'undefined' ? CAT_COLOR : {})[c] || {};
+
+          let style;
           if (isMain && sub) {
-            // Main locked/muted after sub picked
-            bg = 'var(--w-fill-normal)'; color = 'var(--w-label-alternative)';
-            border = '1px solid var(--w-line-normal)'; opacity = 0.55;
+            style = { background:'var(--w-fill-normal)', color:'var(--w-label-disable)', border:'1px solid var(--w-line-alternative)', opacity:0.5 };
           } else if (isMain) {
-            bg = 'var(--w-cool-22)'; color = '#fff';
-            border = '1px solid var(--w-cool-22)'; opacity = 1;
+            style = { background:'var(--w-cool-22)', color:'#fff', border:'1px solid var(--w-cool-22)' };
           } else if (isSub) {
-            bg = 'var(--w-accent-redorange)'; color = '#fff';
-            border = '1px solid var(--w-accent-redorange)'; opacity = 1;
+            style = { background: catC.bg||'var(--w-fill-normal)', color: catC.color||'var(--w-label-normal)', border:'1.5px solid '+(catC.dot||'var(--w-line-normal)') };
           } else {
-            bg = '#fff'; color = 'var(--w-label-normal)';
-            border = '1px solid var(--w-line-normal)'; opacity = 1;
+            style = { background:'#fff', color:'var(--w-label-normal)', border:'1px solid var(--w-line-normal)' };
           }
+
           return (
             <button key={c} onClick={() => handleChip(c)}
               style={{
-                all: "unset", cursor: "pointer",
-                padding: "10px 14px", borderRadius: 9999,
-                fontSize: 13, fontWeight: 700, letterSpacing: "0.01em",
-                background: bg, color, border, opacity,
-                transition: "all 130ms",
-                position: "relative",
+                all:'unset', cursor:'pointer', boxSizing:'border-box',
+                padding:'9px 13px', borderRadius:9999,
+                fontSize:12, fontWeight:700, letterSpacing:'0.01em',
+                display:'flex', alignItems:'center', gap:5,
+                transition:'all 120ms',
+                ...style,
               }}>
+              {!isMain && !isSub && catC.dot && (
+                <span style={{ width:6, height:6, borderRadius:'50%', background:catC.dot, flexShrink:0 }} />
+              )}
               {c}
-              {isMain && <span style={{ marginLeft: 4, fontSize: 9, fontWeight: 800, letterSpacing: '0.04em', verticalAlign: 'middle', opacity: 0.7 }}>M</span>}
-              {isSub  && <span style={{ marginLeft: 4, fontSize: 9, fontWeight: 800, letterSpacing: '0.04em', verticalAlign: 'middle', opacity: 0.8 }}>S</span>}
+              {isMain && <span style={{ fontSize:8, fontWeight:800, opacity:0.7 }}>M</span>}
+              {isSub  && <span style={{ fontSize:8, fontWeight:800, opacity:0.8 }}>S</span>}
             </button>
           );
         })}
