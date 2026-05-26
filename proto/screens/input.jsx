@@ -2,8 +2,8 @@
 
 const INPUT_STEPS = [
   "flights", "companions", "lodging",
-  "mood", "category", "photo",
-  "pace", "transport", "stamina", "food", "budget",
+  "mood", "category",
+  "pace", "transport", "budget",
 ];
 
 function Input({ inputs, setInputs, step, setStep, onDone, onBack }) {
@@ -34,11 +34,8 @@ function Input({ inputs, setInputs, step, setStep, onDone, onBack }) {
       }
       case "mood":       return !!inputs.mood;
       case "category":   return !!(inputs.categoryMain && inputs.categorySub);
-      case "photo":      return !!inputs.photo;
       case "pace":       return !!inputs.pace && !!inputs.wake;
       case "transport":  return !!inputs.transport;
-      case "stamina":    return !!inputs.stamina;
-      case "food":       return !!inputs.food;
       case "budget":     return !!inputs.budget;
       default: return true;
     }
@@ -82,33 +79,12 @@ function Card({ stepKey, inputs, patch }) {
     grid
   />;
   if (stepKey === "category")     return <CategoryBothCard inputs={inputs} patch={patch} />;
-  if (stepKey === "photo")        return <SimpleCard
-    eyebrow="사진" title={"사진은\n얼마나 중요해요?"}
-    sub="photogenic 점수가 동선 후보 가중치에 들어가요."
-    items={OPT.photos}
-    value={inputs.photo} onChange={(v) => patch({ photo: v })}
-    big
-  />;
   if (stepKey === "pace")         return <PaceCard inputs={inputs} patch={patch} />;
   if (stepKey === "transport")    return <SimpleCard
     eyebrow="이동 방식" title={"어떻게 이동\n할 거예요?"}
     sub="이동시간 한계치와 도보 비율을 자동 조정해요."
     items={OPT.transports}
     value={inputs.transport} onChange={(v) => patch({ transport: v })}
-    big
-  />;
-  if (stepKey === "stamina")      return <SimpleCard
-    eyebrow="체력" title={"오래 걸을 수\n있는 편이세요?"}
-    sub="누적 피로도 한계치로 직접 들어가요."
-    items={OPT.staminas}
-    value={inputs.stamina} onChange={(v) => patch({ stamina: v })}
-    big
-  />;
-  if (stepKey === "food")         return <SimpleCard
-    eyebrow="식사" title={"끼니는\n어떻게 챙길까요?"}
-    sub="필수로 두면 점심·저녁에 맛집 노드가 강제 배치돼요."
-    items={OPT.foods}
-    value={inputs.food} onChange={(v) => patch({ food: v })}
     big
   />;
   if (stepKey === "budget")       return <SimpleCard
@@ -464,13 +440,13 @@ function CategoryBothCard({ inputs, patch }) {
       {(main || sub) && (
         <div style={{ marginTop:12, display:'flex', gap:6, alignItems:'center', padding:'8px 12px', borderRadius:10, background:'var(--w-bg-alternative)' }}>
           {main && (
-            <span style={{ fontSize:10, fontWeight:700, color:'var(--w-label-alternative)', letterSpacing:'0.04em' }}>M</span>
+            <span style={{ fontSize:10, fontWeight:700, color:'var(--w-label-alternative)', letterSpacing:'0.04em' }}>메인</span>
           )}
           {main && <CategoryTag cat={main} size='sm' />}
           {sub && <span style={{ fontSize:10, color:'var(--w-label-disable)' }}>+</span>}
           {sub && (
             <>
-              <span style={{ fontSize:10, fontWeight:700, color:'var(--w-label-alternative)', letterSpacing:'0.04em' }}>S</span>
+              <span style={{ fontSize:10, fontWeight:700, color:'var(--w-label-alternative)', letterSpacing:'0.04em' }}>서브</span>
               <CategoryTag cat={sub} size='sm' />
             </>
           )}
@@ -510,8 +486,8 @@ function CategoryBothCard({ inputs, patch }) {
                 <span style={{ width:6, height:6, borderRadius:'50%', background:catC.dot, flexShrink:0 }} />
               )}
               {c}
-              {isMain && <span style={{ fontSize:8, fontWeight:800, opacity:0.7 }}>M</span>}
-              {isSub  && <span style={{ fontSize:8, fontWeight:800, opacity:0.8 }}>S</span>}
+              {isMain && <span style={{ fontSize:8, fontWeight:800, opacity:0.7 }}>메인</span>}
+              {isSub  && <span style={{ fontSize:8, fontWeight:800, opacity:0.8 }}>서브</span>}
             </button>
           );
         })}
