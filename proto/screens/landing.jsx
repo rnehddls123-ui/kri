@@ -164,7 +164,7 @@ function ApiSettingsView({ onBack, onStart }) {
           value={gemini}
           onChange={e => setGemini(e.target.value)}
           placeholder="AIzaSy…"
-          style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:'1px solid '+(geminiOk?'rgba(16,185,129,0.4)':'var(--w-line-normal)'), fontFamily:'var(--w-font-mono)', fontSize:13, color:'var(--w-label-normal)', background:'#fff', outline:'none', marginBottom:6 }}
+          style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:'1px solid '+(geminiOk?'rgba(16,185,129,0.4)':'var(--w-line-normal)'), fontFamily:'var(--w-font-mono)', fontSize:13, color:'var(--w-label-normal)', background:'var(--w-bg-elevated)', outline:'none', marginBottom:6 }}
         />
         <p style={{ fontSize:11, color:'var(--w-label-assistive)', margin:'0 0 20px', lineHeight:1.5 }}>
           ✅ 캐릭터·일정·이미지 생성<br/>
@@ -182,7 +182,7 @@ function ApiSettingsView({ onBack, onStart }) {
           value={maps}
           onChange={e => setMaps(e.target.value)}
           placeholder="AIzaSy…"
-          style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:'1px solid '+(mapsOk?'rgba(16,185,129,0.4)':'var(--w-line-normal)'), fontFamily:'var(--w-font-mono)', fontSize:13, color:'var(--w-label-normal)', background:'#fff', outline:'none', marginBottom:6 }}
+          style={{ width:'100%', padding:'12px 14px', borderRadius:10, border:'1px solid '+(mapsOk?'rgba(16,185,129,0.4)':'var(--w-line-normal)'), fontFamily:'var(--w-font-mono)', fontSize:13, color:'var(--w-label-normal)', background:'var(--w-bg-elevated)', outline:'none', marginBottom:6 }}
         />
         <p style={{ fontSize:11, color:'var(--w-label-assistive)', margin:'0 0 20px', lineHeight:1.5 }}>
           ✅ 지도 동선 표시 (Maps JS API + Places API)<br/>
