@@ -507,17 +507,18 @@ function Toast({ message, onDone }) {
 // ══════════════════════════════════════════════════════════════
 
 const MAPS_STYLE = [
-  { featureType:'all',           elementType:'labels.icon',        stylers:[{visibility:'off'}] },
-  { featureType:'water',         elementType:'geometry',           stylers:[{color:'#cfe8f7'}] },
-  { featureType:'landscape',     elementType:'geometry',           stylers:[{color:'#f5f5f5'}] },
-  { featureType:'road.highway',  elementType:'geometry',           stylers:[{color:'#e2e2e2'}] },
-  { featureType:'road.arterial', elementType:'geometry',           stylers:[{color:'#ebebeb'}] },
-  { featureType:'road.local',    elementType:'geometry.fill',      stylers:[{color:'#ffffff'}] },
-  { featureType:'poi',           elementType:'geometry',           stylers:[{color:'#eeeeee'}] },
-  { featureType:'poi.park',      elementType:'geometry',           stylers:[{color:'#d4edda'}] },
-  { featureType:'transit',       elementType:'geometry',           stylers:[{color:'#e5e5e5'}] },
-  { featureType:'all',           elementType:'labels.text.fill',   stylers:[{color:'#555555'}] },
-  { featureType:'all',           elementType:'labels.text.stroke', stylers:[{color:'#ffffff'}] },
+  { elementType:'geometry',                                         stylers:[{color:'#1a1a2e'}] },
+  { elementType:'labels.icon',                                      stylers:[{visibility:'off'}] },
+  { elementType:'labels.text.fill',                                 stylers:[{color:'#8896a8'}] },
+  { elementType:'labels.text.stroke',                               stylers:[{color:'#1a1a2e'}] },
+  { featureType:'water',         elementType:'geometry',            stylers:[{color:'#0d1117'}] },
+  { featureType:'landscape',     elementType:'geometry',            stylers:[{color:'#1e1e2e'}] },
+  { featureType:'road',          elementType:'geometry',            stylers:[{color:'#2a2a3e'}] },
+  { featureType:'road.highway',  elementType:'geometry',            stylers:[{color:'#32324a'}] },
+  { featureType:'road.arterial', elementType:'geometry',            stylers:[{color:'#28283c'}] },
+  { featureType:'poi',           elementType:'geometry',            stylers:[{color:'#242436'}] },
+  { featureType:'poi.park',      elementType:'geometry',            stylers:[{color:'#1a2a1a'}] },
+  { featureType:'transit',       elementType:'geometry',            stylers:[{color:'#222232'}] },
 ];
 
 function GoogleMap({ pins = [], onPin, height = '100%', interactive = false }) {
@@ -610,7 +611,7 @@ function GoogleMap({ pins = [], onPin, height = '100%', interactive = false }) {
 
   if (!window.__apiKeys?.maps) {
     return (
-      <div style={{ width:'100%', height, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'#f0f4f8', gap:6 }}>
+      <div style={{ width:'100%', height, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'var(--w-bg-alternative)', gap:6 }}>
         <span style={{ fontSize:28 }}>🗺️</span>
         <span style={{ fontSize:12, fontWeight:700, color:'#888' }}>Google Maps 키 미설정</span>
         <span style={{ fontSize:11, color:'#aaa' }}>⚙ API 설정에서 입력하세요</span>
@@ -620,7 +621,7 @@ function GoogleMap({ pins = [], onPin, height = '100%', interactive = false }) {
 
   if (!ready) {
     return (
-      <div style={{ width:'100%', height, display:'flex', alignItems:'center', justifyContent:'center', background:'#f0f4f8' }}>
+      <div style={{ width:'100%', height, display:'flex', alignItems:'center', justifyContent:'center', background:'var(--w-bg-alternative)' }}>
         <span style={{ fontSize:12, fontWeight:700, color:'#aaa' }}>지도 로딩 중…</span>
       </div>
     );
@@ -697,7 +698,7 @@ function Cta({ children, onClick, variant="primary", disabled, full=true }) {
 
 function PickCard({ title, desc, active, onClick, big=true }) {
   return (
-    <button onClick={onClick} style={{ all:"unset", boxSizing:"border-box", display:"flex", flexDirection:"column", gap:big?4:6, padding:big?"16px 18px":"14px 14px", background:active?"var(--w-blue-99)":"#fff", border:"1px solid "+(active?"var(--w-primary)":"var(--w-line-normal)"), boxShadow:active?"0 0 0 1px var(--w-primary) inset":"none", borderRadius:14, cursor:"pointer", position:"relative", transition:"background 150ms, border-color 150ms" }}>
+    <button onClick={onClick} style={{ all:"unset", boxSizing:"border-box", display:"flex", flexDirection:"column", gap:big?4:6, padding:big?"16px 18px":"14px 14px", background:active?"var(--w-blue-99)":"var(--w-bg-elevated)", border:"1px solid "+(active?"var(--w-primary)":"var(--w-line-normal)"), boxShadow:active?"0 0 0 1px var(--w-primary) inset":"none", borderRadius:14, cursor:"pointer", position:"relative", transition:"background 150ms, border-color 150ms" }}>
       <div style={{ fontSize:big?16:14, fontWeight:700, letterSpacing:"-0.005em", color:"var(--w-label-normal)" }}>{title}</div>
       {desc && <div style={{ fontSize:big?13:12, fontWeight:500, color:"var(--w-label-alternative)", lineHeight:1.5 }}>{desc}</div>}
       {active && <div style={{ position:"absolute", top:14, right:14, width:20, height:20, borderRadius:9999, background:"var(--w-primary)", display:"flex", alignItems:"center", justifyContent:"center" }}><img src="ds/icons/check.svg" style={{ width:12, height:12, filter:"brightness(0) invert(1)" }} /></div>}
@@ -754,19 +755,19 @@ const TOKYO_DISTRICTS = [
 
 // ── Category color map & tag ──────────────────────────────────
 const CAT_COLOR = {
-  '음식·맛집':      { bg:'rgba(249,115,22,0.09)', color:'#C2410C', dot:'#F97316' },
-  '카페·디저트':    { bg:'rgba(180,83,9,0.09)',   color:'#92400E', dot:'#B45309' },
-  '쇼핑·편집샵':    { bg:'rgba(139,92,246,0.09)', color:'#6D28D9', dot:'#8B5CF6' },
-  '플리마켓·빈티지':{ bg:'rgba(16,185,129,0.09)', color:'#065F46', dot:'#10B981' },
-  '예술·전시':      { bg:'rgba(59,130,246,0.09)', color:'#1D4ED8', dot:'#3B82F6' },
-  '문화·역사·신사': { bg:'rgba(239,68,68,0.09)',  color:'#991B1B', dot:'#EF4444' },
-  '서브컬처':       { bg:'rgba(124,58,237,0.09)', color:'#5B21B6', dot:'#7C3AED' },
-  '자연·공원':      { bg:'rgba(34,197,94,0.09)',  color:'#14532D', dot:'#22C55E' },
-  '야경·뷰':        { bg:'rgba(99,102,241,0.09)', color:'#3730A3', dot:'#6366F1' },
-  '현지인 골목':    { bg:'rgba(234,179,8,0.09)',  color:'#78350F', dot:'#EAB308' },
-  '체험·액티비티':  { bg:'rgba(20,184,166,0.09)', color:'#134E4A', dot:'#14B8A6' },
-  '온천·휴식':      { bg:'rgba(236,72,153,0.09)', color:'#831843', dot:'#EC4899' },
-  '근교·당일':      { bg:'rgba(168,85,247,0.09)', color:'#581C87', dot:'#A855F7' },
+  '음식·맛집':      { bg:'rgba(249,115,22,0.15)', color:'#FB923C', dot:'#F97316' },
+  '카페·디저트':    { bg:'rgba(180,83,9,0.15)',   color:'#D97706', dot:'#B45309' },
+  '쇼핑·편집샵':    { bg:'rgba(139,92,246,0.15)', color:'#A78BFA', dot:'#8B5CF6' },
+  '플리마켓·빈티지':{ bg:'rgba(16,185,129,0.15)', color:'#34D399', dot:'#10B981' },
+  '예술·전시':      { bg:'rgba(59,130,246,0.15)', color:'#60A5FA', dot:'#3B82F6' },
+  '문화·역사·신사': { bg:'rgba(239,68,68,0.15)',  color:'#F87171', dot:'#EF4444' },
+  '서브컬처':       { bg:'rgba(124,58,237,0.15)', color:'#C084FC', dot:'#7C3AED' },
+  '자연·공원':      { bg:'rgba(34,197,94,0.15)',  color:'#4ADE80', dot:'#22C55E' },
+  '야경·뷰':        { bg:'rgba(99,102,241,0.15)', color:'#818CF8', dot:'#6366F1' },
+  '현지인 골목':    { bg:'rgba(234,179,8,0.15)',  color:'#FCD34D', dot:'#EAB308' },
+  '체험·액티비티':  { bg:'rgba(20,184,166,0.15)', color:'#2DD4BF', dot:'#14B8A6' },
+  '온천·휴식':      { bg:'rgba(236,72,153,0.15)', color:'#F472B6', dot:'#EC4899' },
+  '근교·당일':      { bg:'rgba(168,85,247,0.15)', color:'#C084FC', dot:'#A855F7' },
 };
 
 function CategoryTag({ cat, size='sm' }) {

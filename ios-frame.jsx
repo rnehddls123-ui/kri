@@ -196,7 +196,7 @@ function IOSDevice({ children, width = 390, dark = false }) {
       maxWidth: width,
       height: '100%',
       position: 'relative',
-      background: dark ? '#0a0a0b' : '#ffffff',
+      background: 'var(--w-bg-normal)',
       overflow: 'hidden',
       fontFamily: '-apple-system, system-ui, sans-serif',
       WebkitFontSmoothing: 'antialiased',

@@ -166,7 +166,7 @@ function Generating({ phase=1, character }) {
 
   return (
     <PhoneShell scroll={false}>
-      <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"0 32px", background:"#F8F9FA" }}>
+      <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"0 32px", background:"var(--w-bg-normal)" }}>
         <div style={{ position:"relative", width:180, height:180, marginBottom:28 }}>
           <div style={{ position:"absolute", inset:-18, borderRadius:"50%", border:"1px solid rgba(255,94,0,0.20)", animation:"pulse 1.8s ease-out infinite" }} />
           <div style={{ position:"absolute", inset:-40, borderRadius:"50%", border:"1px solid rgba(255,94,0,0.10)", animation:"pulse 2.4s ease-out infinite" }} />
@@ -183,7 +183,7 @@ function Generating({ phase=1, character }) {
           {items.map((it,i) => {
             const done=it.done===true, active=it.done==="active";
             return (
-              <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 14px", borderRadius:10, border:"1px solid "+(done?"rgba(16,185,129,0.20)":active?"rgba(0,102,255,0.15)":"var(--w-line-alternative)"), background:done?"rgba(16,185,129,0.06)":active?"rgba(0,102,255,0.06)":"#fff" }}>
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 14px", borderRadius:10, border:"1px solid "+(done?"rgba(16,185,129,0.25)":active?"rgba(0,102,255,0.20)":"var(--w-line-alternative)"), background:done?"rgba(16,185,129,0.10)":active?"rgba(0,102,255,0.10)":"var(--w-bg-elevated)" }}>
                 <span style={{ fontSize:12, fontWeight:700, color:done?"#065F46":active?"var(--w-primary)":"var(--w-label-assistive)" }}>{it.t}</span>
                 <span style={{ fontFamily:"var(--w-font-mono)", fontSize:10, fontWeight:700, color:done?"#065F46":active?"var(--w-primary)":"var(--w-label-disable)", letterSpacing:"0.04em" }}>{done?"✓ DONE":active?"RUNNING…":"WAIT"}</span>
               </div>
@@ -215,7 +215,7 @@ function GenderPick({ character, onPick }) {
           {[{ v:"여성", hi:"#ffd6e8", mid:"#f06aa2", lo:"#7a1454" },
             { v:"남성", hi:"#bcd8ff", mid:"#5d8af0", lo:"#1b3a8a" }].map(g => (
             <button key={g.v} onClick={() => onPick(g.v)}
-              style={{ all:"unset", cursor:"pointer", background:"#fff", border:"1px solid var(--w-line-normal)", borderRadius:18, padding:"20px 16px", display:"flex", flexDirection:"column", alignItems:"center", gap:14, transition:"border-color 150ms" }}>
+              style={{ all:"unset", cursor:"pointer", background:"var(--w-bg-elevated)", border:"1px solid var(--w-line-normal)", borderRadius:18, padding:"20px 16px", display:"flex", flexDirection:"column", alignItems:"center", gap:14, transition:"border-color 150ms" }}>
               <CharacterOrb hi={g.hi} mid={g.mid} lo={g.lo} size={96} label={null} />
               <div style={{ fontSize:15, fontWeight:700 }}>{g.v}</div>
             </button>
