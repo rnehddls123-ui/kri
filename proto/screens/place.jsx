@@ -115,41 +115,58 @@ function PlaceDetail({ placeId, character, onClose }) {
 
             <div style={{ height: 18 }} />
 
-            {/* Hours + stay grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              <MetaCell label="영업시간" v={p.open} />
-              <MetaCell label="평균 체류" v={`${p.stay}분`} />
+            {/* Stay stat */}
+            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+              <span style={{ fontFamily:'var(--w-font-mono)', fontSize:18, fontWeight:700, color:'var(--w-label-normal)' }}>{p.stay}분</span>
+              <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase', color:'var(--w-label-assistive)' }}>평균 체류</span>
             </div>
 
             <div style={{ height: 20 }} />
 
-            {/* 정보 — 팩트 3줄 */}
+            {/* Data grid — 4 cells */}
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:1, borderRadius:12, overflow:'hidden', border:'1px solid var(--w-line-alternative)' }}>
+              {[
+                { l:'평점', v:`⭐ ${p.rating}` },
+                { l:'리뷰', v:`${p.reviews.toLocaleString()}명` },
+                { l:'영업시간', v:p.open },
+                { l:'예산', v:p.price },
+              ].map((d, i) => (
+                <div key={i} style={{ padding:'10px 14px', background:i%2===0?'#fff':'var(--w-bg-alternative)', borderRight:i%2===0?'1px solid var(--w-line-alternative)':undefined, borderBottom:i<2?'1px solid var(--w-line-alternative)':undefined }}>
+                  <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase', color:'var(--w-label-assistive)', marginBottom:4 }}>{d.l}</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:'var(--w-label-normal)' }}>{d.v}</div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ height: 20 }} />
+
+            {/* 정보 */}
             <SectionLabel>정보</SectionLabel>
             <p style={{
-              fontSize: 14, lineHeight: 1.65, fontWeight: 500,
+              fontSize: 13, lineHeight: 1.65, fontWeight: 500,
               color: "var(--w-label-normal)", margin: "8px 0 0", textWrap: "pretty",
             }}>
               {p.info}
             </p>
 
-            <div style={{ height: 22 }} />
+            <div style={{ height: 18 }} />
 
-            {/* 추천이유 — 큐레이션 2줄 */}
+            {/* 추천이유 */}
             <div style={{
-              padding: "14px 16px", borderRadius: 14,
-              background: "rgba(255,94,0,0.06)",
-              border: "1px solid rgba(255,94,0,0.16)",
+              padding: "14px 16px", borderRadius: 12,
+              background: "var(--w-bg-alternative)",
+              border: "1px solid var(--w-line-alternative)",
             }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                 <CharacterOrb hi={character.hi} mid={character.mid} lo={character.lo}
-                  size={20} label={null} />
-                <span style={{ fontSize: 11, fontWeight: 700,
-                                letterSpacing: "0.06em", color: "var(--w-accent-redorange)",
+                  size={18} label={null} />
+                <span style={{ fontSize: 10, fontWeight: 700,
+                                letterSpacing: "0.06em", color: "var(--w-label-alternative)",
                                 textTransform: "uppercase" }}>
                   {character.name.split(" 하는 ")[1] || "당신"}에게
                 </span>
               </div>
-              <div style={{ fontSize: 14, lineHeight: 1.65, fontWeight: 500, color: "var(--w-label-normal)" }}>
+              <div style={{ fontSize: 13, lineHeight: 1.65, fontWeight: 500, color: "var(--w-label-normal)" }}>
                 {p.why}
               </div>
             </div>

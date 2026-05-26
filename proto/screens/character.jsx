@@ -145,7 +145,7 @@ function Generating({ phase=1, character }) {
 
   return (
     <PhoneShell scroll={false}>
-      <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"0 32px", background:"radial-gradient(circle at 50% 28%, #FFE6D4 0%, #FFFFFF 70%)" }}>
+      <div style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"0 32px", background:"#F8F9FA" }}>
         <div style={{ position:"relative", width:180, height:180, marginBottom:28 }}>
           <div style={{ position:"absolute", inset:-18, borderRadius:"50%", border:"1px solid rgba(255,94,0,0.20)", animation:"pulse 1.8s ease-out infinite" }} />
           <div style={{ position:"absolute", inset:-40, borderRadius:"50%", border:"1px solid rgba(255,94,0,0.10)", animation:"pulse 2.4s ease-out infinite" }} />
@@ -162,15 +162,15 @@ function Generating({ phase=1, character }) {
           {items.map((it,i) => {
             const done=it.done===true, active=it.done==="active";
             return (
-              <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"12px 14px", borderRadius:12, background:done?"rgba(0,191,64,0.08)":active?"rgba(255,94,0,0.10)":"var(--w-bg-alternative)" }}>
-                <span style={{ fontSize:13, fontWeight:700, color:done?"var(--w-status-positive)":active?"var(--w-accent-redorange)":"var(--w-label-assistive)" }}>{it.t}</span>
-                <span style={{ fontSize:11, fontWeight:700, color:done?"var(--w-status-positive)":active?"var(--w-accent-redorange)":"var(--w-label-assistive)", letterSpacing:"0.04em" }}>{done?"완료":active?"생성 중…":"대기"}</span>
+              <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 14px", borderRadius:10, border:"1px solid "+(done?"rgba(16,185,129,0.20)":active?"rgba(0,102,255,0.15)":"var(--w-line-alternative)"), background:done?"rgba(16,185,129,0.06)":active?"rgba(0,102,255,0.06)":"#fff" }}>
+                <span style={{ fontSize:12, fontWeight:700, color:done?"#065F46":active?"var(--w-primary)":"var(--w-label-assistive)" }}>{it.t}</span>
+                <span style={{ fontFamily:"var(--w-font-mono)", fontSize:10, fontWeight:700, color:done?"#065F46":active?"var(--w-primary)":"var(--w-label-disable)", letterSpacing:"0.04em" }}>{done?"✓ DONE":active?"RUNNING…":"WAIT"}</span>
               </div>
             );
           })}
         </div>
-        <div style={{ marginTop:20, padding:"6px 12px", borderRadius:9999, background:hasGemini()?"rgba(255,94,0,0.10)":"rgba(112,115,124,0.08)", fontSize:11, fontWeight:700, color:hasGemini()?"var(--w-accent-redorange)":"var(--w-label-assistive)", letterSpacing:"0.04em" }}>
-          {hasGemini() ? `✦ ${providerLabel} API 호출 중` : "목 데이터 사용 중 — ⚙ API 설정에서 키 입력"}
+        <div style={{ marginTop:20, padding:"6px 14px", borderRadius:8, border:"1px solid "+(hasGemini()?"rgba(0,102,255,0.15)":"var(--w-line-alternative)"), background:hasGemini()?"rgba(0,102,255,0.06)":"var(--w-bg-alternative)", fontSize:10, fontWeight:700, color:hasGemini()?"var(--w-primary)":"var(--w-label-assistive)", letterSpacing:"0.05em", fontFamily:"var(--w-font-mono)" }}>
+          {hasGemini() ? `${providerLabel} API RUNNING` : "MOCK DATA — ⚙ API 설정에서 키 입력"}
         </div>
       </div>
       <style>{`@keyframes pulse { 0%{transform:scale(0.95);opacity:0.9;} 70%{transform:scale(1.18);opacity:0;} 100%{transform:scale(1.18);opacity:0;} }`}</style>
