@@ -243,7 +243,7 @@ JSON 출력 (days 배열, 요소 ${numDays}개):
           /* Expanded square map */
           <div style={{ borderRadius:18, overflow:'hidden', aspectRatio:'1/1', position:'relative', border:'1px solid var(--w-line-alternative)' }}>
             <GoogleMap pins={pins} onPin={p => { onOpenPlace(p.id); }} height="100%" interactive={true} />
-            <div style={{ position:'absolute', left:12, top:12, background:'rgba(255,255,255,0.94)', padding:'6px 10px', borderRadius:8, fontSize:11, fontWeight:700, display:'flex', alignItems:'center', gap:6, pointerEvents:'none' }}>
+            <div style={{ position:'absolute', left:12, top:12, background:'rgba(20,20,28,0.88)', padding:'6px 10px', borderRadius:8, fontSize:11, fontWeight:700, color:'rgba(255,255,255,0.9)', display:'flex', alignItems:'center', gap:6, pointerEvents:'none' }}>
               <img src="ds/icons/location.svg" style={{ width:12, height:12, filter:'brightness(0)', opacity:0.7 }} />
               {dayData.area}
             </div>
@@ -251,7 +251,7 @@ JSON 출력 (days 배열, 요소 ${numDays}개):
               {placeNodes.length}개 장소
             </div>
             <button onClick={() => setMapOpen(false)}
-              style={{ position:'absolute', left:12, bottom:12, background:'rgba(255,255,255,0.94)', border:0, borderRadius:8, padding:'6px 10px', fontSize:11, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}>
+              style={{ position:'absolute', left:12, bottom:12, background:'rgba(20,20,28,0.88)', border:'1px solid rgba(255,255,255,0.12)', borderRadius:8, padding:'6px 10px', fontSize:11, fontWeight:700, cursor:'pointer', color:'rgba(255,255,255,0.9)', display:'flex', alignItems:'center', gap:4 }}>
               ✕ 닫기
             </button>
           </div>
@@ -449,7 +449,7 @@ function GeneratingItin() {
             const done   = i < step;
             const active = i === step;
             return (
-              <div key={i} style={{ display:'flex', gap:12, alignItems:'center', padding:'12px 14px', borderRadius:12, background:done?'rgba(0,191,64,0.07)':active?'rgba(0,102,255,0.08)':'var(--w-bg-alternative)' }}>
+              <div key={i} style={{ display:'flex', gap:12, alignItems:'center', padding:'12px 14px', borderRadius:12, background:done?'rgba(16,185,129,0.10)':active?'rgba(0,102,255,0.12)':'var(--w-bg-elevated)' }}>
                 <div style={{ width:22, height:22, borderRadius:7, flexShrink:0, background:done?'rgba(0,191,64,0.15)':active?'rgba(0,102,255,0.18)':'var(--w-fill-normal)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, fontWeight:700, color:done?'var(--w-status-positive)':active?'var(--w-primary)':'var(--w-label-assistive)', fontFamily:'var(--w-font-mono)' }}>
                   {done ? '✓' : i + 1}
                 </div>

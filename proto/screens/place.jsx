@@ -64,7 +64,7 @@ function PlaceDetail({ placeId, character, onClose, onSwapPlace }) {
       <div style={{
         position: "absolute", left: 0, right: 0, bottom: 0,
         height: "86%",
-        background: "#fff",
+        background: "var(--w-bg-normal)",
         borderTopLeftRadius: 28, borderTopRightRadius: 28,
         overflow: "hidden", display: "flex", flexDirection: "column",
         transform: open ? "translateY(0)" : "translateY(100%)",
@@ -98,7 +98,7 @@ function PlaceDetail({ placeId, character, onClose, onSwapPlace }) {
               <button onClick={close} style={{
                 position: "absolute", top: 12, right: 12,
                 width: 32, height: 32, borderRadius: 9999, border: 0,
-                background: "rgba(255,255,255,0.92)", cursor: "pointer",
+                background: "rgba(20,20,28,0.80)", cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}>
                 <img src="ds/icons/close.svg" style={{ width: 16, height: 16 }} />
@@ -167,7 +167,7 @@ function PlaceDetail({ placeId, character, onClose, onSwapPlace }) {
                 { l:'영업시간', v:p.open },
                 { l:'예산', v:p.price },
               ].map((d, i) => (
-                <div key={i} style={{ padding:'10px 14px', background:i%2===0?'#fff':'var(--w-bg-alternative)', borderRight:i%2===0?'1px solid var(--w-line-alternative)':undefined, borderBottom:i<2?'1px solid var(--w-line-alternative)':undefined }}>
+                <div key={i} style={{ padding:'10px 14px', background:i%2===0?'var(--w-bg-elevated)':'var(--w-bg-alternative)', borderRight:i%2===0?'1px solid var(--w-line-alternative)':undefined, borderBottom:i<2?'1px solid var(--w-line-alternative)':undefined }}>
                   <div style={{ fontSize:9, fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase', color:'var(--w-label-assistive)', marginBottom:4 }}>{d.l}</div>
                   <div style={{ fontSize:13, fontWeight:700, color:'var(--w-label-normal)' }}>{d.v}</div>
                 </div>
