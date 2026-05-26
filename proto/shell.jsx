@@ -9,22 +9,52 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function hasGemini() { return !!window.__apiKeys?.gemini; }
 
-// Returns { text: string }
+// Returns { text: string, model: string }
+// Tries gemini-2.0-flash first, falls back to gemini-1.5-flash on 4xx errors
 async function callLLM(userPrompt, systemPrompt = '', maxTokens = 1024) {
   if (!hasGemini()) throw new Error('Gemini 키가 없어요');
-  const key  = window.__apiKeys.gemini;
-  const body = {
-    systemInstruction: systemPrompt ? { parts: [{ text: systemPrompt }] } : undefined,
-    contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-    generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 },
-  };
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
-    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
-  );
-  if (!res.ok) { const e = await res.json().catch(()=>{}); throw new Error(e?.error?.message || `Gemini HTTP ${res.status}`); }
-  const data = await res.json();
-  return { text: data.candidates[0].content.parts[0].text };
+  const key = window.__apiKeys.gemini;
+  const models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+
+  for (const model of models) {
+    const body = {
+      systemInstruction: systemPrompt ? { parts: [{ text: systemPrompt }] } : undefined,
+      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+      generationConfig: { maxOutputTokens: maxTokens, temperature: 0.7 },
+    };
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    );
+
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      const msg = e?.error?.message || `HTTP ${res.status}`;
+      // 4xx often means model unavailable for this key tier — try next
+      if (res.status === 400 || res.status === 404 || res.status === 429) {
+        console.warn(`[LLM] ${model} 실패 (${res.status}: ${msg}) — 다음 모델 시도…`);
+        continue;
+      }
+      throw new Error(`Gemini 오류: ${msg}`);
+    }
+
+    const data = await res.json();
+    const candidate = data.candidates?.[0];
+    if (!candidate) throw new Error(`Gemini: candidates 없음 (model=${model})`);
+
+    // Handle safety / content filter blocks
+    if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+      console.warn(`[LLM] finishReason=${candidate.finishReason} — 다음 모델 시도…`);
+      continue;
+    }
+
+    const text = candidate.content?.parts?.[0]?.text;
+    if (!text) throw new Error(`Gemini: 텍스트 없음 (finishReason=${candidate.finishReason})`);
+
+    window.__lastLLMModel = model; // debug aid
+    return { text, model };
+  }
+  throw new Error('Gemini: 모든 모델 실패 — API 키를 확인하세요');
 }
 
 // Parse JSON from LLM response (handles markdown code fences)

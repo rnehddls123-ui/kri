@@ -24,15 +24,16 @@ function App() {
   }));
   const [openPlace, setOpenPlace] = useState(null);
 
-  // When input categories change, refresh the character preview (name + colors)
+  // When input categories change, refresh the character preview — but only while
+  // still in the input flow (not after the character has been AI-generated).
+  // This prevents the category-change effect from overwriting an AI-generated character.
   useEffect(() => {
-    const c = pickCharacter(inputs.categoryMain, inputs.categorySub);
-    setCharacter((prev) => ({
-      ...c,
-      gender: prev.gender,
-      image: false,
-      imageUrl: null,
-    }));
+    // Don't overwrite an already AI-generated character
+    setCharacter((prev) => {
+      if (prev.aiGenerated) return prev; // keep Gemini result
+      const c = pickCharacter(inputs.categoryMain, inputs.categorySub);
+      return { ...c, gender: prev.gender, image: false, imageUrl: null };
+    });
   }, [inputs.categoryMain, inputs.categorySub]);
 
   // Global reset hook (used by the "처음으로" pill outside the phone frame)
@@ -41,9 +42,9 @@ function App() {
       setScreen("landing");
       setInputStep(0);
       setOpenPlace(null);
-      // Reset character too so it re-generates on next run
+      // Reset character (clear aiGenerated so the next run generates fresh)
       const c = pickCharacter(inputs.categoryMain, inputs.categorySub);
-      setCharacter({ ...c, gender: null, image: false, imageUrl: null });
+      setCharacter({ ...c, gender: null, image: false, imageUrl: null, aiGenerated: false });
     };
     return () => { delete window.__protoReset; };
   }, [inputs.categoryMain, inputs.categorySub]);

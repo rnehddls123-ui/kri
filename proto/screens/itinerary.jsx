@@ -22,16 +22,30 @@ function Itinerary({ character, inputs, onBack, openPlace, onOpenPlace, onCloseP
 
       // ── Step 1: Fetch real places from Google Maps Places API ──
       let dynamicPlaces = null;
-      if (window.__apiKeys?.maps && window.__mapsReady) {
-        try {
-          dynamicPlaces = await fetchTokyoPlaces(inputs);
-          if (dynamicPlaces) {
-            const cnt = Object.keys(dynamicPlaces).length;
-            if (!cancelled) setGmapsCount(cnt);
-            console.log(`[Itinerary] GMaps Places: ${cnt}개 실시간 장소 수신`);
+      if (window.__apiKeys?.maps) {
+        // Maps JS API loads asynchronously — wait up to 8s for it to be ready
+        if (!window.__mapsReady) {
+          console.log('[Itinerary] Maps API 로딩 대기 중…');
+          for (let i = 0; i < 16; i++) {
+            await sleep(500);
+            if (window.__mapsReady) break;
           }
-        } catch (err) {
-          console.warn('[Itinerary] GMaps Places fetch 실패:', err.message);
+        }
+        if (window.__mapsReady) {
+          try {
+            dynamicPlaces = await fetchTokyoPlaces(inputs);
+            if (dynamicPlaces) {
+              const cnt = Object.keys(dynamicPlaces).length;
+              if (!cancelled) setGmapsCount(cnt);
+              console.log(`[Itinerary] 구글맵 ${cnt}개 장소 실시간 수신 ✓`);
+            } else {
+              console.warn('[Itinerary] fetchTokyoPlaces returned null (Places API 비활성화?)');
+            }
+          } catch (err) {
+            console.warn('[Itinerary] GMaps Places fetch 실패:', err.message);
+          }
+        } else {
+          console.warn('[Itinerary] Maps API 8초 내 로딩 실패 — 하드코딩 장소 사용');
         }
       }
 

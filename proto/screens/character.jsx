@@ -56,10 +56,12 @@ function Character({ inputs, character, setCharacter, onBack, onContinue }) {
             mid: d.mid || prev.mid,
             lo:  d.lo  || prev.lo,
             gender: null, image: false, imageUrl: null,
+            aiGenerated: true,   // marks successful Gemini generation
           }));
         }
       } catch (err) {
-        console.warn('[Character] LLM failed, using mock:', err.message);
+        console.warn('[Character] LLM failed:', err.message);
+        // aiGenerated stays undefined (falsy) → Reveal shows mock badge
       }
 
       if (!cancelled) setPhase("gender");
@@ -224,7 +226,12 @@ function Reveal({ inputs, character, onBack, onContinue, onRedo }) {
     }>
       <PageBar onBack={onBack} dark right={<img src="ds/icons/share.svg" style={{ width:22, height:22, filter:"brightness(0) invert(1)", opacity:0.78 }} />} />
       <div style={{ padding:"0 22px 24px", color:"#fff" }}>
-        <Eyebrow tone="accent">당신의 도쿄 캐릭터</Eyebrow>
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+          <Eyebrow tone="accent">당신의 도쿄 캐릭터</Eyebrow>
+          <span style={{ fontSize:10, fontWeight:700, letterSpacing:"0.06em", padding:"3px 8px", borderRadius:9999, background: character.aiGenerated?"rgba(255,94,0,0.22)":"rgba(255,255,255,0.10)", color: character.aiGenerated?"#ffb085":"rgba(255,255,255,0.45)" }}>
+            {character.aiGenerated ? "✦ Gemini AI" : "목 데이터"}
+          </span>
+        </div>
         <div style={{ height:16 }} />
         <div style={{ background:"linear-gradient(160deg, #2a2225 0%, #1a1518 100%)", borderRadius:24, padding:"22px 20px 20px", border:"1px solid rgba(255,255,255,0.06)", display:"flex", flexDirection:"column", alignItems:"center" }}>
           <CharacterOrb hi={character.hi} mid={character.mid} lo={character.lo} size={170} label={character.imageUrl?"Imagen 3":"AI 생성"} imageUrl={character.imageUrl} />
