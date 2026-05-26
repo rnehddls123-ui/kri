@@ -6,6 +6,7 @@ function Itinerary({ character, inputs, onBack, openPlace, onOpenPlace, onCloseP
   const [day, setDay]           = useState(1);
   const [usedProvider, setUsedProvider] = useState(null);
   const [gmapsCount, setGmapsCount]     = useState(0);
+  const [mapOpen, setMapOpen]       = useState(false);
 
   // ── Generate dynamic itinerary via LLM ──────────────────────
   useEffect(() => {
@@ -204,22 +205,40 @@ JSON 형식 (days 배열 ${numDays}개):
         </div>
       )}
 
-      {/* Map */}
-      <div style={{ margin:'0 20px 12px', borderRadius:18, overflow:'hidden', aspectRatio:'1.55 / 1', position:'relative', border:'1px solid var(--w-line-alternative)' }}>
-        <GoogleMap pins={pins} onPin={p => onOpenPlace(p.id)} height="100%" />
-        <div style={{ position:'absolute', left:12, top:12, background:'rgba(255,255,255,0.94)', padding:'6px 10px', borderRadius:8, fontSize:11, fontWeight:700, display:'flex', alignItems:'center', gap:6, pointerEvents:'none' }}>
-          <img src="ds/icons/location.svg" style={{ width:12, height:12, filter:'brightness(0)', opacity:0.7 }} />
-          {dayData.area}
-        </div>
-        <div style={{ position:'absolute', right:12, top:12, background:'var(--w-cool-22)', color:'#fff', padding:'6px 10px', borderRadius:8, fontSize:11, fontWeight:700, pointerEvents:'none' }}>
-          {placeNodes.length}개 장소
-        </div>
+      {/* Map — collapsed / expanded */}
+      <div style={{ margin:'0 20px 12px' }}>
+        {!mapOpen ? (
+          /* Compact bar */
+          <button onClick={() => setMapOpen(true)}
+            style={{ all:'unset', cursor:'pointer', width:'100%', boxSizing:'border-box', background:'var(--w-bg-alternative)', borderRadius:14, padding:'13px 16px', display:'flex', alignItems:'center', gap:10, border:'1px solid var(--w-line-alternative)' }}>
+            <span style={{ fontSize:22, lineHeight:1 }}>🗺️</span>
+            <span style={{ flex:1, fontSize:13, fontWeight:700, color:'var(--w-label-normal)' }}>지도에서 동선 보기 · {dayData.area}</span>
+            <span style={{ fontSize:11, fontWeight:700, color:'var(--w-accent-redorange)', background:'rgba(255,94,0,0.10)', padding:'3px 8px', borderRadius:9999 }}>{placeNodes.length}개 장소</span>
+            <span style={{ fontSize:18, color:'var(--w-label-alternative)', lineHeight:1 }}>›</span>
+          </button>
+        ) : (
+          /* Expanded square map */
+          <div style={{ borderRadius:18, overflow:'hidden', aspectRatio:'1/1', position:'relative', border:'1px solid var(--w-line-alternative)' }}>
+            <GoogleMap pins={pins} onPin={p => { onOpenPlace(p.id); }} height="100%" interactive={true} />
+            <div style={{ position:'absolute', left:12, top:12, background:'rgba(255,255,255,0.94)', padding:'6px 10px', borderRadius:8, fontSize:11, fontWeight:700, display:'flex', alignItems:'center', gap:6, pointerEvents:'none' }}>
+              <img src="ds/icons/location.svg" style={{ width:12, height:12, filter:'brightness(0)', opacity:0.7 }} />
+              {dayData.area}
+            </div>
+            <div style={{ position:'absolute', right:12, top:12, background:'var(--w-cool-22)', color:'#fff', padding:'6px 10px', borderRadius:8, fontSize:11, fontWeight:700, pointerEvents:'none' }}>
+              {placeNodes.length}개 장소
+            </div>
+            <button onClick={() => setMapOpen(false)}
+              style={{ position:'absolute', left:12, bottom:12, background:'rgba(255,255,255,0.94)', border:0, borderRadius:8, padding:'6px 10px', fontSize:11, fontWeight:700, cursor:'pointer', display:'flex', alignItems:'center', gap:4 }}>
+              ✕ 닫기
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Day tabs */}
       <div style={{ display:'flex', gap:6, padding:'0 20px 12px' }}>
         {liveItin.days.map(d => (
-          <button key={d.idx} onClick={() => setDay(d.idx)}
+          <button key={d.idx} onClick={() => { setDay(d.idx); setMapOpen(false); }}
             style={{ flex:1, padding:'10px 4px', borderRadius:10, border:0, background:d.idx===day?'var(--w-cool-22)':'var(--w-bg-alternative)', color:d.idx===day?'#fff':'var(--w-label-alternative)', cursor:'pointer', fontFamily:'var(--w-font-sans)', display:'flex', flexDirection:'column', alignItems:'center', gap:1 }}>
             <span style={{ fontSize:10, fontWeight:700, letterSpacing:'0.05em' }}>DAY {d.idx}</span>
             <span style={{ fontSize:11, fontWeight:500, opacity:0.7 }}>{d.date} {d.weekday}</span>

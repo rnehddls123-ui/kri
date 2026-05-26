@@ -27,7 +27,7 @@ function Input({ inputs, setInputs, step, setStep, onDone, onBack }) {
         return inputs.arrAirport && inputs.arrDate && inputs.arrTime &&
                inputs.depAirport && inputs.depDate && inputs.depTime;
       case "companions": return !!inputs.companions;
-      case "lodging":    return (inputs.lodging || "").trim().length > 1;
+      case "lodging":    return !!inputs.lodging;
       case "mood":       return !!inputs.mood;
       case "categoryMain": return !!inputs.categoryMain;
       case "categorySub":  return !!inputs.categorySub && inputs.categorySub !== inputs.categoryMain;
@@ -272,48 +272,47 @@ function inputStyle() {
 
 // ───── Lodging card ──────────────────────────────────────────
 function LodgingCard({ inputs, patch }) {
+  const numNights = (inputs.arrDate && inputs.depDate)
+    ? Math.max(0, Math.round((new Date(inputs.depDate) - new Date(inputs.arrDate)) / (1000*60*60*24)))
+    : null;
+
   return (
     <>
       <Eyebrow>숙소 위치</Eyebrow>
-      <div style={{ height: 8 }} />
-      <Heading>{"숙소 이름이나\n동네를 알려주세요"}</Heading>
-      <div style={{ height: 8 }} />
-      <Sub>여러 숙소면 한 줄에 하나씩 적어주세요. 권역을 자동으로 추출해요.</Sub>
-      <div style={{ height: 20 }} />
-      <textarea
-        rows={4}
-        placeholder={"예) 우에노 토요코인\n다이칸야마 호텔 B (3-4일차)"}
-        value={inputs.lodging || ""}
-        onChange={(e) => patch({ lodging: e.target.value })}
-        style={{
-          ...inputStyle(),
-          fontSize: 15, lineHeight: 1.55, padding: "14px 16px",
-          minHeight: 130, resize: "none",
-        }}
-      />
-      {(inputs.lodging || "").trim() && (
-        <div style={{
-          marginTop: 14, padding: "12px 14px",
-          background: "rgba(0,102,255,0.06)", borderRadius: 12,
-          display: "flex", alignItems: "center", gap: 10,
-        }}>
-          <img src="ds/icons/sparkle-fill.svg" style={{ width: 16, height: 16 }} />
-          <div style={{ fontSize: 12, color: "var(--w-label-normal)", fontWeight: 500, lineHeight: 1.5 }}>
-            추출한 권역:{" "}
-            <b style={{ color: "var(--w-primary)" }}>
-              {extractAreas(inputs.lodging).join(" · ")}
-            </b>
-          </div>
+      <div style={{ height:8 }} />
+      <Heading>{"숙소가 있는\n권역을 골라주세요"}</Heading>
+      <div style={{ height:8 }} />
+      <Sub>선택한 권역을 기준으로 동선 이동 시간을 계산해요.</Sub>
+
+      {numNights !== null && (
+        <div style={{ marginTop:12, padding:'10px 16px', background:'var(--w-bg-alternative)', borderRadius:12, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+          <span style={{ fontSize:12, fontWeight:700, color:'var(--w-label-alternative)', letterSpacing:'0.04em' }}>항공편 기준 일정</span>
+          <span style={{ fontFamily:'var(--w-font-display)', fontSize:20, fontWeight:700, letterSpacing:'-0.015em' }}>
+            {numNights}박 {numNights + 1}일
+          </span>
         </div>
       )}
+
+      <div style={{ height:20 }} />
+      <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+        {TOKYO_DISTRICTS.map((d) => (
+          <button key={d.name}
+            onClick={() => patch({ lodging: d.name })}
+            style={{
+              all:'unset', cursor:'pointer',
+              padding:'10px 18px', borderRadius:9999,
+              fontSize:14, fontWeight:700,
+              background: inputs.lodging === d.name ? 'var(--w-cool-22)' : '#fff',
+              color: inputs.lodging === d.name ? '#fff' : 'var(--w-label-normal)',
+              border:'1px solid ' + (inputs.lodging === d.name ? 'var(--w-cool-22)' : 'var(--w-line-normal)'),
+              transition:'all 120ms',
+            }}>
+            {d.name}
+          </button>
+        ))}
+      </div>
     </>
   );
-}
-
-function extractAreas(text) {
-  if (!text) return [];
-  const known = TOKYO_DISTRICTS.map((d) => d.name);
-  return known.filter((n) => text.includes(n));
 }
 
 // ───── Category card (13 chips) ──────────────────────────────
