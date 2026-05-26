@@ -330,6 +330,13 @@ function TransitRow({ n }) {
           <span>¥{n.fee.toLocaleString()}</span>
         </>}
       </div>
+      {(n.from || n.to) && (
+        <div style={{ fontSize:10, color:'var(--w-label-assistive)', fontWeight:600, marginTop:2, paddingLeft:19, display:'flex', alignItems:'center', gap:3 }}>
+          {n.from && <span>{n.from}</span>}
+          {n.from && n.to && <span style={{ opacity:0.5, margin:'0 2px' }}>→</span>}
+          {n.to && <span>{n.to}</span>}
+        </div>
+      )}
     </div>
   );
 }
