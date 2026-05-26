@@ -88,27 +88,47 @@ async function callGeminiImage(prompt) {
   return `data:${mime};base64,${b64}`;
 }
 
-// Gemini 2.0 Flash native image generation (free tier compatible)
+// Gemini Flash native image generation — tries multiple model variants in order
 async function callGeminiFlashImage(prompt) {
   const key = window.__apiKeys.gemini;
   if (!key) throw new Error('No Gemini key');
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${key}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
-      }),
+  const models = [
+    'gemini-2.0-flash-preview-image-generation',
+    'gemini-2.0-flash-exp',
+    'gemini-2.0-flash',
+  ];
+  for (const model of models) {
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+          }),
+        }
+      );
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        console.warn(`[FlashImage] ${model} failed (${res.status}): ${e?.error?.message || '?'} — 다음 시도…`);
+        continue;
+      }
+      const data = await res.json();
+      const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+      if (!imagePart?.inlineData?.data) {
+        console.warn(`[FlashImage] ${model} returned no image data — 다음 시도…`);
+        continue;
+      }
+      const { data: b64, mimeType: mime } = imagePart.inlineData;
+      console.log(`[FlashImage] ✓ ${model}`);
+      return `data:${mime || 'image/png'};base64,${b64}`;
+    } catch (e) {
+      console.warn(`[FlashImage] ${model} exception:`, e.message, '— 다음 시도…');
     }
-  );
-  if (!res.ok) { const e = await res.json().catch(()=>{}); throw new Error(e?.error?.message || `Flash Image HTTP ${res.status}`); }
-  const data = await res.json();
-  const imagePart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-  if (!imagePart?.inlineData?.data) throw new Error('Flash: no image data');
-  const { data: b64, mimeType: mime } = imagePart.inlineData;
-  return `data:${mime || 'image/png'};base64,${b64}`;
+  }
+  throw new Error('Flash Image: 모든 모델 실패 — API 키를 확인하세요');
 }
 
 // Universal: tries Imagen 3, falls back to Gemini Flash image
@@ -134,10 +154,22 @@ function addMin(time, min) {
   return `${String(Math.floor(t/60)%24).padStart(2,'0')}:${String(t%60).padStart(2,'0')}`;
 }
 
+// Returns the lodging area name for a given night number (1-indexed)
+function getLodgingForNight(nightNum, lodgings) {
+  if (!lodgings || lodgings.length === 0) return null;
+  if (lodgings.length === 1) return lodgings[0].area || null;
+  let cum = 0;
+  for (const l of lodgings) {
+    cum += (l.nights || 1);
+    if (nightNum <= cum) return l.area || null;
+  }
+  return lodgings[lodgings.length - 1].area || null;
+}
+
 function buildDayNodes(placeIds, dayIdx, totalDays, inputs, PLACES) {
   const nodes = [];
   const isArrival   = dayIdx === 1;
-  const isDeparture = dayIdx === totalDays;   // dynamic — not hardcoded to 4
+  const isDeparture = dayIdx === totalDays;
   const arrAirport  = inputs.arrAirport || 'NRT';
   const depAirport  = inputs.depAirport || 'NRT';
   const arrTime     = inputs.arrTime    || '14:30';
@@ -145,20 +177,52 @@ function buildDayNodes(placeIds, dayIdx, totalDays, inputs, PLACES) {
   const airMinNRT = 70, airMinHND = 35;
   const airFeeNRT = 3070, airFeeHND = 520;
 
-  const lodgingLabel = inputs.lodging || '숙소';
+  // Resolve lodgings array — fall back to single-lodging
+  const lodgings = (inputs.lodgings && inputs.lodgings.length > 0)
+    ? inputs.lodgings
+    : [{ area: inputs.lodging || '숙소', nights: Math.max(1, totalDays - 1) }];
+
+  // Which lodging is "tonight" (the one slept in after day K)?
+  // On departure day we don't sleep anywhere — use last night's lodging for checkout
+  const tonightLodging = isDeparture
+    ? (getLodgingForNight(dayIdx - 1, lodgings) || '숙소')
+    : (getLodgingForNight(dayIdx, lodgings) || '숙소');
+  const lastNightLodging = dayIdx > 1
+    ? (getLodgingForNight(dayIdx - 1, lodgings) || '숙소')
+    : null;
+
+  // Lodging changes when the morning lodging ≠ tonight's lodging (non-arrival, non-departure)
+  const isLodgingChangeDay = !isArrival && !isDeparture
+    && lastNightLodging && tonightLodging
+    && lastNightLodging !== tonightLodging;
+
   let cur = inputs.wake === '느긋하게' ? '11:00' : '09:00';
 
+  // ── Day-start transit / check-in ──────────────────────────────
   if (isArrival) {
-    const airMin  = arrAirport === 'NRT' ? airMinNRT : airMinHND;
-    const airFee  = arrAirport === 'NRT' ? airFeeNRT : airFeeHND;
-    const airMode = arrAirport === 'NRT' ? '나리타 익스프레스' : '공항 모노레일';
-    const airEnd  = addMin(arrTime, airMin + 5);
-    nodes.push({ type:'transit', from:arrAirport, to:lodgingLabel, mode:airMode, min:airMin, fee:airFee, start:arrTime, end:airEnd });
+    const lodging1 = getLodgingForNight(1, lodgings) || '숙소';
+    const airMin   = arrAirport === 'NRT' ? airMinNRT : airMinHND;
+    const airFee   = arrAirport === 'NRT' ? airFeeNRT : airFeeHND;
+    const airMode  = arrAirport === 'NRT' ? '나리타 익스프레스' : '공항 모노레일';
+    const airEnd   = addMin(arrTime, airMin + 5);
+    nodes.push({ type:'transit', from:arrAirport, to:lodging1, mode:airMode, min:airMin, fee:airFee, start:arrTime, end:airEnd });
     const checkEnd = addMin(airEnd, 60);
-    nodes.push({ type:'stay', title:`${lodgingLabel} 체크인`, start:airEnd, end:checkEnd, fixed:true });
+    nodes.push({ type:'stay', title:`${lodging1} 체크인`, start:airEnd, end:checkEnd, fixed:true });
     cur = checkEnd;
+  } else if (isLodgingChangeDay) {
+    // Morning: checkout from lastNightLodging, transit to tonightLodging, checkin
+    const checkoutEnd = addMin(cur, 60);
+    nodes.push({ type:'stay', title:`${lastNightLodging} 체크아웃`, start:cur, end:checkoutEnd, fixed:true });
+    cur = checkoutEnd;
+    const transitEnd = addMin(cur, 30);
+    nodes.push({ type:'transit', from:lastNightLodging, to:tonightLodging, mode:'지하철', min:30, start:cur, end:transitEnd });
+    cur = transitEnd;
+    const checkinEnd = addMin(cur, 30);
+    nodes.push({ type:'stay', title:`${tonightLodging} 체크인`, start:cur, end:checkinEnd, fixed:true });
+    cur = checkinEnd;
   }
 
+  // ── Places ────────────────────────────────────────────────────
   for (const id of placeIds) {
     const p = PLACES[id];
     if (!p) continue;
@@ -170,16 +234,23 @@ function buildDayNodes(placeIds, dayIdx, totalDays, inputs, PLACES) {
     cur = stayEnd;
   }
 
+  // ── Day-end: airport or return to lodging ─────────────────────
   if (isDeparture) {
-    const airMin  = depAirport === 'NRT' ? airMinNRT : airMinHND;
-    const airFee  = depAirport === 'NRT' ? airFeeNRT : airFeeHND;
-    const airMode = depAirport === 'NRT' ? '나리타 익스프레스' : '공항 모노레일';
+    const airMin   = depAirport === 'NRT' ? airMinNRT : airMinHND;
+    const airFee   = depAirport === 'NRT' ? airFeeNRT : airFeeHND;
+    const airMode  = depAirport === 'NRT' ? '나리타 익스프레스' : '공항 모노레일';
     const depLeave  = addMin(depTime, -(airMin + 120));
     const depArrive = addMin(depTime, -120);
-    nodes.push({ type:'transit', from:lodgingLabel, to:depAirport, mode:airMode, min:airMin, fee:airFee, start:depLeave, end:depArrive });
+    // Checkout before transit
+    const checkoutTime = addMin(depLeave, -30);
+    nodes.push({ type:'stay', title:`${tonightLodging} 체크아웃`, start:checkoutTime, end:depLeave, fixed:true });
+    nodes.push({ type:'transit', from:tonightLodging, to:depAirport, mode:airMode, min:airMin, fee:airFee, start:depLeave, end:depArrive });
     nodes.push({ type:'checkin', title:`${depAirport} 공항 도착`, start:depArrive, fixed:true, note:'출발 2시간 전' });
-  } else if (!isArrival) {
-    nodes.push({ type:'transit', mode:'도보', min:10, start:cur, end:addMin(cur,10), to:lodgingLabel });
+  } else {
+    // Return to tonight's lodging
+    const transitEnd = addMin(cur, 20);
+    nodes.push({ type:'transit', mode:'지하철·도보', min:20, start:cur, end:transitEnd, to:tonightLodging });
+    nodes.push({ type:'stay', title:`${tonightLodging} 귀환`, start:transitEnd, end:transitEnd });
   }
 
   return nodes;
@@ -324,7 +395,7 @@ async function fetchTokyoPlaces(inputs) {
   return Object.keys(allPlaces).length > 0 ? allPlaces : null;
 }
 
-Object.assign(window, { callLLM, parseJSON, callImageGen, canGenerateImage, imageProviderLabel, sleep, hasGemini, buildItinerary, addMin, buildDayNodes, fetchTokyoPlaces, CAT_QUERIES });
+Object.assign(window, { callLLM, parseJSON, callImageGen, canGenerateImage, imageProviderLabel, sleep, hasGemini, buildItinerary, addMin, buildDayNodes, getLodgingForNight, fetchTokyoPlaces, CAT_QUERIES });
 
 // ══════════════════════════════════════════════════════════════
 // Google Maps component

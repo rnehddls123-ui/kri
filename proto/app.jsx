@@ -2,21 +2,23 @@
 function App() {
   const [screen, setScreen]     = useState("landing");
   const [inputStep, setInputStep] = useState(0);
-  const [inputs, setInputs]     = useState({
-    arrAirport: "NRT", arrDate: "2025-11-22", arrTime: "14:30",
-    depAirport: "NRT", depDate: "2025-11-25", depTime: "17:30",
-    companions: null,
-    lodging: null,
-    mood: null,
-    categoryMain: null,
-    categorySub: null,
-    photo: null,
-    pace: null,
-    wake: null,
-    transport: null,
-    stamina: null,
-    food: null,
-    budget: null,
+  const [inputs, setInputs]     = useState(() => {
+    // Real-time date defaults (2 weeks out, 3-night trip)
+    const today = new Date();
+    const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    const arrDate = fmt(new Date(today.getTime() + 14*24*60*60*1000));
+    const depDate = fmt(new Date(today.getTime() + 17*24*60*60*1000));
+    return {
+      arrAirport: "NRT", arrDate, arrTime: "14:30",
+      depAirport: "NRT", depDate, depTime: "17:30",
+      companions: null,
+      lodging: null, lodgings: null,
+      mood: null,
+      categoryMain: null, categorySub: null,
+      photo: null,
+      pace: null, wake: null,
+      transport: null, stamina: null, food: null, budget: null,
+    };
   });
   const [character, setCharacter] = useState(() => ({
     ...pickCharacter("음식·맛집", "쇼핑·편집샵"),

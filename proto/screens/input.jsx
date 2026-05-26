@@ -2,7 +2,7 @@
 
 const INPUT_STEPS = [
   "flights", "companions", "lodging",
-  "mood", "categoryMain", "categorySub", "photo",
+  "mood", "category", "photo",
   "pace", "transport", "stamina", "food", "budget",
 ];
 
@@ -27,10 +27,13 @@ function Input({ inputs, setInputs, step, setStep, onDone, onBack }) {
         return inputs.arrAirport && inputs.arrDate && inputs.arrTime &&
                inputs.depAirport && inputs.depDate && inputs.depTime;
       case "companions": return !!inputs.companions;
-      case "lodging":    return !!inputs.lodging;
+      case "lodging": {
+        const lgs = inputs.lodgings;
+        if (lgs && lgs.length > 0) return lgs.every(l => !!l.area);
+        return !!inputs.lodging;
+      }
       case "mood":       return !!inputs.mood;
-      case "categoryMain": return !!inputs.categoryMain;
-      case "categorySub":  return !!inputs.categorySub && inputs.categorySub !== inputs.categoryMain;
+      case "category":   return !!(inputs.categoryMain && inputs.categorySub);
       case "photo":      return !!inputs.photo;
       case "pace":       return !!inputs.pace && !!inputs.wake;
       case "transport":  return !!inputs.transport;
@@ -78,21 +81,7 @@ function Card({ stepKey, inputs, patch }) {
     value={inputs.mood} onChange={(v) => patch({ mood: v })}
     grid
   />;
-  if (stepKey === "categoryMain") return <CategoryCard
-    title={"가장 끌리는\n한 가지는?"}
-    sub="이 카테고리가 캐릭터와 동선의 50% 이상을 차지해요."
-    eyebrow="관심 · 메인"
-    value={inputs.categoryMain}
-    onChange={(v) => patch({ categoryMain: v, ...(v === inputs.categorySub ? { categorySub: null } : {}) })}
-  />;
-  if (stepKey === "categorySub")  return <CategoryCard
-    title={"하나 더\n섞고 싶은 건요?"}
-    sub="메인과 다른 카테고리 1개를 1-2개 노드로 섞어드려요."
-    eyebrow="관심 · 서브"
-    value={inputs.categorySub}
-    disabled={inputs.categoryMain}
-    onChange={(v) => patch({ categorySub: v })}
-  />;
+  if (stepKey === "category")     return <CategoryBothCard inputs={inputs} patch={patch} />;
   if (stepKey === "photo")        return <SimpleCard
     eyebrow="사진" title={"사진은\n얼마나 중요해요?"}
     sub="photogenic 점수가 동선 후보 가중치에 들어가요."
@@ -270,11 +259,56 @@ function inputStyle() {
   };
 }
 
-// ───── Lodging card ──────────────────────────────────────────
+// ───── Lodging card (supports 1 or 2 lodging areas) ─────────
 function LodgingCard({ inputs, patch }) {
   const numNights = (inputs.arrDate && inputs.depDate)
-    ? Math.max(0, Math.round((new Date(inputs.depDate) - new Date(inputs.arrDate)) / (1000*60*60*24)))
+    ? Math.max(1, Math.round((new Date(inputs.depDate) - new Date(inputs.arrDate)) / (1000*60*60*24)))
     : null;
+
+  // Normalize lodgings into array
+  const lodgings = (inputs.lodgings && inputs.lodgings.length > 0)
+    ? inputs.lodgings
+    : inputs.lodging
+      ? [{ area: inputs.lodging, nights: numNights || 1 }]
+      : [];
+
+  const hasTwo = lodgings.length >= 2;
+
+  function setArea(idx, area) {
+    const updated = lodgings.map((l, i) => i === idx ? { ...l, area } : l);
+    if (updated.length === 0) updated.push({ area, nights: numNights || 1 });
+    patch({ lodgings: updated, lodging: updated[0]?.area || null });
+  }
+
+  function setNights1(nights) {
+    if (!numNights || nights < 1 || nights >= numNights) return;
+    const updated = [
+      { ...(lodgings[0] || {}), nights },
+      { ...(lodgings[1] || {}), nights: numNights - nights },
+    ];
+    patch({ lodgings: updated, lodging: updated[0]?.area || null });
+  }
+
+  function addSecond() {
+    const n1 = Math.max(1, Math.floor((numNights || 2) / 2));
+    const n2 = (numNights || 2) - n1;
+    const updated = [
+      { ...(lodgings[0] || { area: null }), nights: n1 },
+      { area: null, nights: n2 },
+    ];
+    patch({ lodgings: updated, lodging: updated[0]?.area || null });
+  }
+
+  function removeSec() {
+    const updated = [{ ...(lodgings[0] || { area: null }), nights: numNights || 1 }];
+    patch({ lodgings: updated, lodging: updated[0]?.area || null });
+  }
+
+  // When user selects area for the very first slot (no lodgings yet)
+  function selectFirst(area) {
+    const updated = [{ area, nights: numNights || 1 }];
+    patch({ lodgings: updated, lodging: area });
+  }
 
   return (
     <>
@@ -282,85 +316,192 @@ function LodgingCard({ inputs, patch }) {
       <div style={{ height:8 }} />
       <Heading>{"숙소가 있는\n권역을 골라주세요"}</Heading>
       <div style={{ height:8 }} />
-      <Sub>선택한 권역을 기준으로 동선 이동 시간을 계산해요.</Sub>
+      <Sub>권역 기준으로 동선 이동 시간을 계산해요.</Sub>
 
       {numNights !== null && (
         <div style={{ marginTop:12, padding:'10px 16px', background:'var(--w-bg-alternative)', borderRadius:12, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <span style={{ fontSize:12, fontWeight:700, color:'var(--w-label-alternative)', letterSpacing:'0.04em' }}>항공편 기준 일정</span>
+          <span style={{ fontSize:12, fontWeight:700, color:'var(--w-label-alternative)', letterSpacing:'0.04em' }}>항공편 기준</span>
           <span style={{ fontFamily:'var(--w-font-display)', fontSize:20, fontWeight:700, letterSpacing:'-0.015em' }}>
             {numNights}박 {numNights + 1}일
           </span>
         </div>
       )}
 
-      <div style={{ height:20 }} />
-      <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+      <div style={{ height:14 }} />
+
+      {/* Lodging 1 */}
+      <LodgingSlot
+        label={hasTwo ? `숙소 1 · ${lodgings[0]?.nights || 1}박` : '숙소 권역'}
+        selectedArea={lodgings[0]?.area || null}
+        onSelectArea={lodgings.length === 0 ? selectFirst : (a) => setArea(0, a)}
+        nights={hasTwo ? (lodgings[0]?.nights || 1) : null}
+        onSetNights={hasTwo ? setNights1 : null}
+        minNights={1}
+        maxNights={hasTwo ? (numNights || 2) - 1 : null}
+      />
+
+      {hasTwo && (
+        <>
+          <div style={{ margin:'12px 0', display:'flex', alignItems:'center', gap:8 }}>
+            <div style={{ flex:1, height:1, background:'var(--w-line-alternative)' }} />
+            <span style={{ fontSize:10, fontWeight:700, color:'var(--w-label-disable)', letterSpacing:'0.05em' }}>체크아웃 후 이동</span>
+            <div style={{ flex:1, height:1, background:'var(--w-line-alternative)' }} />
+          </div>
+          <LodgingSlot
+            label={`숙소 2 · ${lodgings[1]?.nights || 1}박`}
+            selectedArea={lodgings[1]?.area || null}
+            onSelectArea={(a) => setArea(1, a)}
+            nights={null}
+            onSetNights={null}
+          />
+          <button onClick={removeSec}
+            style={{ all:'unset', cursor:'pointer', marginTop:10, fontSize:12, fontWeight:700, color:'var(--w-label-alternative)', display:'flex', alignItems:'center', gap:4 }}>
+            <span>✕</span>
+            <span style={{ textDecoration:'underline' }}>숙소 나누기 취소</span>
+          </button>
+        </>
+      )}
+
+      {!hasTwo && numNights && numNights > 1 && (
+        <button onClick={addSecond}
+          style={{ all:'unset', cursor:'pointer', marginTop:14, width:'100%', boxSizing:'border-box', padding:'12px 16px', borderRadius:12, border:'1.5px dashed var(--w-line-strong)', display:'flex', alignItems:'center', justifyContent:'center', gap:6, fontSize:13, fontWeight:700, color:'var(--w-label-alternative)' }}>
+          <span style={{ fontSize:16 }}>+</span>
+          <span>숙소 추가 · 권역 이동 여정</span>
+        </button>
+      )}
+    </>
+  );
+}
+
+// ───── Single lodging slot (area chips + optional nights stepper) ─
+function LodgingSlot({ label, selectedArea, onSelectArea, nights, onSetNights, minNights, maxNights }) {
+  return (
+    <div>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:8 }}>
+        <span style={{ fontSize:11, fontWeight:700, color:'var(--w-label-alternative)', letterSpacing:'0.05em', textTransform:'uppercase' }}>
+          {label}
+        </span>
+        {onSetNights && nights != null && (
+          <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+            <button
+              onClick={() => onSetNights(nights - 1)}
+              disabled={nights <= (minNights || 1)}
+              style={{ all:'unset', cursor: nights <= (minNights || 1) ? 'not-allowed' : 'pointer', width:26, height:26, borderRadius:7, background:'var(--w-fill-normal)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:700, color: nights <= (minNights || 1) ? 'var(--w-label-disable)' : 'var(--w-label-normal)' }}>
+              −
+            </button>
+            <span style={{ fontSize:13, fontWeight:700, minWidth:24, textAlign:'center', letterSpacing:'-0.01em' }}>{nights}박</span>
+            <button
+              onClick={() => onSetNights(nights + 1)}
+              disabled={maxNights != null && nights >= maxNights}
+              style={{ all:'unset', cursor: maxNights != null && nights >= maxNights ? 'not-allowed' : 'pointer', width:26, height:26, borderRadius:7, background:'var(--w-fill-normal)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, fontWeight:700, color: maxNights != null && nights >= maxNights ? 'var(--w-label-disable)' : 'var(--w-label-normal)' }}>
+              +
+            </button>
+          </div>
+        )}
+      </div>
+      <div style={{ display:'flex', flexWrap:'wrap', gap:7 }}>
         {TOKYO_DISTRICTS.map((d) => (
           <button key={d.name}
-            onClick={() => patch({ lodging: d.name })}
+            onClick={() => onSelectArea(d.name)}
             style={{
               all:'unset', cursor:'pointer',
-              padding:'10px 18px', borderRadius:9999,
-              fontSize:14, fontWeight:700,
-              background: inputs.lodging === d.name ? 'var(--w-cool-22)' : '#fff',
-              color: inputs.lodging === d.name ? '#fff' : 'var(--w-label-normal)',
-              border:'1px solid ' + (inputs.lodging === d.name ? 'var(--w-cool-22)' : 'var(--w-line-normal)'),
+              padding:'8px 14px', borderRadius:9999,
+              fontSize:13, fontWeight:700,
+              background: selectedArea === d.name ? 'var(--w-cool-22)' : '#fff',
+              color: selectedArea === d.name ? '#fff' : 'var(--w-label-normal)',
+              border:'1px solid ' + (selectedArea === d.name ? 'var(--w-cool-22)' : 'var(--w-line-normal)'),
               transition:'all 120ms',
             }}>
             {d.name}
           </button>
         ))}
       </div>
-    </>
+    </div>
   );
 }
 
-// ───── Category card (13 chips) ──────────────────────────────
-function CategoryCard({ eyebrow, title, sub, value, onChange, disabled }) {
+// ───── Category card — Main + Sub on one screen ──────────────
+// Phase 1: no main selected → pick main (all chips normal, tap → dark/filled = main)
+// Phase 2: main set, no sub → tap another → becomes sub (accent). main chip goes muted.
+// Reset: tap main chip → clears both. Tap sub chip → clears sub only.
+function CategoryBothCard({ inputs, patch }) {
+  const main = inputs.categoryMain;
+  const sub  = inputs.categorySub;
+
+  function handleChip(c) {
+    if (c === main) {
+      // Tap main → clear both
+      patch({ categoryMain: null, categorySub: null });
+    } else if (c === sub) {
+      // Tap sub → clear sub only
+      patch({ categorySub: null });
+    } else if (!main) {
+      // No main yet → set main
+      patch({ categoryMain: c, categorySub: null });
+    } else {
+      // Main is set, pick sub
+      patch({ categorySub: c });
+    }
+  }
+
+  const phaseTitle = !main
+    ? "가장 끌리는\n취향은?"
+    : !sub
+    ? "하나 더\n섞어볼까요?"
+    : "취향 조합\n완성! ✓";
+
+  const phaseSub = !main
+    ? "첫 번째 선택이 캐릭터와 동선의 절반 이상을 결정해요."
+    : !sub
+    ? `메인 "${main}" 고정 · 서브를 하나 더 골라요.`
+    : `"${main}" + "${sub}" 조합으로 맞춤 동선을 짜드려요.`;
+
   return (
     <>
-      <Eyebrow>{eyebrow}</Eyebrow>
+      <Eyebrow>관심 · 취향</Eyebrow>
       <div style={{ height: 8 }} />
-      <Heading><span style={{ whiteSpace: "pre-line" }}>{title}</span></Heading>
+      <Heading><span style={{ whiteSpace: "pre-line" }}>{phaseTitle}</span></Heading>
       <div style={{ height: 8 }} />
-      <Sub>{sub}</Sub>
-      <div style={{ height: 22 }} />
+      <Sub>{phaseSub}</Sub>
+      <div style={{ height: 18 }} />
+
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignContent: "flex-start" }}>
         {OPT.categories.map((c) => {
-          const isDisabled = disabled === c;
-          const isActive = value === c;
+          const isMain = c === main;
+          const isSub  = c === sub;
+          // Visual states
+          let bg, color, border, opacity;
+          if (isMain && sub) {
+            // Main locked/muted after sub picked
+            bg = 'var(--w-fill-normal)'; color = 'var(--w-label-alternative)';
+            border = '1px solid var(--w-line-normal)'; opacity = 0.55;
+          } else if (isMain) {
+            bg = 'var(--w-cool-22)'; color = '#fff';
+            border = '1px solid var(--w-cool-22)'; opacity = 1;
+          } else if (isSub) {
+            bg = 'var(--w-accent-redorange)'; color = '#fff';
+            border = '1px solid var(--w-accent-redorange)'; opacity = 1;
+          } else {
+            bg = '#fff'; color = 'var(--w-label-normal)';
+            border = '1px solid var(--w-line-normal)'; opacity = 1;
+          }
           return (
-            <button key={c} onClick={() => !isDisabled && onChange(c)}
-              disabled={isDisabled}
+            <button key={c} onClick={() => handleChip(c)}
               style={{
-                all: "unset", cursor: isDisabled ? "not-allowed" : "pointer",
+                all: "unset", cursor: "pointer",
                 padding: "10px 14px", borderRadius: 9999,
                 fontSize: 13, fontWeight: 700, letterSpacing: "0.01em",
-                background: isActive ? "var(--w-cool-22)"
-                          : isDisabled ? "transparent" : "#fff",
-                color: isActive ? "#fff"
-                     : isDisabled ? "var(--w-label-disable)" : "var(--w-label-normal)",
-                border: "1px solid " + (isActive ? "var(--w-cool-22)"
-                                       : isDisabled ? "var(--w-line-alternative)"
-                                       : "var(--w-line-normal)"),
-                opacity: isDisabled ? 0.5 : 1,
-                transition: "all 120ms",
-                textDecoration: isDisabled ? "line-through" : "none",
+                background: bg, color, border, opacity,
+                transition: "all 130ms",
+                position: "relative",
               }}>
               {c}
+              {isMain && <span style={{ marginLeft: 4, fontSize: 9, fontWeight: 800, letterSpacing: '0.04em', verticalAlign: 'middle', opacity: 0.7 }}>M</span>}
+              {isSub  && <span style={{ marginLeft: 4, fontSize: 9, fontWeight: 800, letterSpacing: '0.04em', verticalAlign: 'middle', opacity: 0.8 }}>S</span>}
             </button>
           );
         })}
       </div>
-      {disabled && (
-        <div style={{
-          marginTop: "auto", padding: "10px 14px",
-          background: "var(--w-bg-alternative)", borderRadius: 10,
-          fontSize: 12, color: "var(--w-label-alternative)", fontWeight: 500,
-        }}>
-          메인으로 고른 <b style={{ color: "var(--w-label-normal)" }}>{disabled}</b>는 제외돼요.
-        </div>
-      )}
     </>
   );
 }

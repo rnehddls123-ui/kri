@@ -13,9 +13,6 @@ function PlaceDetail({ placeId, character, onClose }) {
     setTimeout(onClose, 240);
   }
 
-  // Crisp deterministic hero gradient per place (so card "photo" feels real)
-  const heroBg = placeHero(p);
-
   return (
     <div style={{
       position: "absolute", inset: 0, zIndex: 100,
@@ -45,34 +42,55 @@ function PlaceDetail({ placeId, character, onClose }) {
         </div>
 
         <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
-          {/* hero */}
-          <div style={{
-            margin: "8px 16px 0", height: 168, borderRadius: 18,
-            background: heroBg, position: "relative", overflow: "hidden",
-          }}>
-            {/* Real Google Maps photo (GMaps live places) */}
-            {p.photoUrl && (
-              <img src={p.photoUrl} alt={p.name}
-                style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }} />
-            )}
+          {/* hero — real photo when available, plain header otherwise */}
+          {p.photoUrl ? (
             <div style={{
-              position: "absolute", left: 14, bottom: 12,
-              padding: "5px 9px", borderRadius: 6,
-              background: "rgba(0,0,0,0.52)", color: "#fff",
-              fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
-              fontFamily: "var(--w-font-mono)",
+              margin: "8px 16px 0", height: 168, borderRadius: 18,
+              position: "relative", overflow: "hidden",
             }}>
-              {p.source === 'gmaps' ? '📍 GOOGLE MAPS LIVE' : 'GOOGLE PLACES · ' + placeId}
+              <img src={p.photoUrl} alt={p.name}
+                style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+              <div style={{
+                position: "absolute", left: 14, bottom: 12,
+                padding: "5px 9px", borderRadius: 6,
+                background: "rgba(0,0,0,0.52)", color: "#fff",
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.04em",
+                fontFamily: "var(--w-font-mono)",
+              }}>
+                📍 GOOGLE MAPS LIVE
+              </div>
+              <button onClick={close} style={{
+                position: "absolute", top: 12, right: 12,
+                width: 32, height: 32, borderRadius: 9999, border: 0,
+                background: "rgba(255,255,255,0.92)", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <img src="ds/icons/close.svg" style={{ width: 16, height: 16 }} />
+              </button>
             </div>
-            <button onClick={close} style={{
-              position: "absolute", top: 12, right: 12,
-              width: 32, height: 32, borderRadius: 9999, border: 0,
-              background: "rgba(255,255,255,0.92)", cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center",
+          ) : (
+            /* No photo — compact header row, no gradient box */
+            <div style={{
+              margin: "4px 16px 0", padding: "6px 4px",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
             }}>
-              <img src="ds/icons/close.svg" style={{ width: 16, height: 16 }} />
-            </button>
-          </div>
+              <span style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: "0.05em",
+                color: "var(--w-label-alternative)", fontFamily: "var(--w-font-mono)",
+                padding: "4px 8px", borderRadius: 6,
+                background: "var(--w-fill-normal)",
+              }}>
+                {p.source === 'gmaps' ? '📍 GOOGLE MAPS LIVE' : 'GOOGLE PLACES'}
+              </span>
+              <button onClick={close} style={{
+                width: 32, height: 32, borderRadius: 9999, border: 0,
+                background: "var(--w-fill-normal)", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <img src="ds/icons/close.svg" style={{ width: 16, height: 16 }} />
+              </button>
+            </div>
+          )}
 
           <div style={{ padding: "18px 22px 24px" }}>
             <Eyebrow>{p.category} · {p.region}</Eyebrow>
