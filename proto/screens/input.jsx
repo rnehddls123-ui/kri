@@ -181,7 +181,7 @@ function nights(a, b) {
 function FlightBlock({ label, airport, date, time, onChange }) {
   return (
     <div style={{
-      background: "#fff", border: "1px solid var(--w-line-normal)",
+      background: "var(--w-bg-elevated)", border: "1px solid var(--w-line-normal)",
       borderRadius: 16, padding: 16, display: "flex", flexDirection: "column", gap: 12,
     }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: "var(--w-label-alternative)",
@@ -194,7 +194,7 @@ function FlightBlock({ label, airport, date, time, onChange }) {
             style={{
               flex: 1, padding: "10px 0", borderRadius: 10,
               border: "1px solid " + (airport === a ? "var(--w-primary)" : "var(--w-line-normal)"),
-              background: airport === a ? "var(--w-blue-99)" : "#fff",
+              background: airport === a ? "var(--w-blue-99)" : "var(--w-bg-elevated)",
               fontSize: 14, fontWeight: 700,
               color: airport === a ? "var(--w-primary)" : "var(--w-label-normal)",
               cursor: "pointer", letterSpacing: "0.03em",
@@ -230,7 +230,7 @@ function inputStyle() {
     border: "1px solid var(--w-line-normal)",
     fontFamily: "var(--w-font-sans)", fontSize: 14,
     color: "var(--w-label-normal)",
-    background: "#fff",
+    background: "var(--w-bg-elevated)",
     outline: "none",
   };
 }
@@ -383,7 +383,7 @@ function LodgingSlot({ label, selectedArea, onSelectArea, nights, onSetNights, m
               all:'unset', cursor:'pointer',
               padding:'8px 14px', borderRadius:9999,
               fontSize:13, fontWeight:700,
-              background: selectedArea === d.name ? 'var(--w-cool-22)' : '#fff',
+              background: selectedArea === d.name ? 'var(--w-cool-22)' : 'var(--w-bg-elevated)',
               color: selectedArea === d.name ? '#fff' : 'var(--w-label-normal)',
               border:'1px solid ' + (selectedArea === d.name ? 'var(--w-cool-22)' : 'var(--w-line-normal)'),
               transition:'all 120ms',
@@ -469,7 +469,7 @@ function CategoryBothCard({ inputs, patch }) {
           } else if (isSub) {
             style = { background: catC.bg||'var(--w-fill-normal)', color: catC.color||'var(--w-label-normal)', border:'1.5px solid '+(catC.dot||'var(--w-line-normal)') };
           } else {
-            style = { background:'#fff', color:'var(--w-label-normal)', border:'1px solid var(--w-line-normal)' };
+            style = { background:'var(--w-bg-elevated)', color:'var(--w-label-normal)', border:'1px solid var(--w-line-normal)' };
           }
 
           return (

@@ -16,7 +16,7 @@ function HomeView({ onStart, onSettings }) {
 
   return (
     <PhoneShell scroll={false}>
-      <div style={{ flex:1, display:'flex', flexDirection:'column', background:'#F8F9FA' }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', background:'var(--w-bg-normal)' }}>
 
         {/* Header row */}
         <div style={{ padding:'14px 20px 0', display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0 }}>
@@ -51,7 +51,7 @@ function HomeView({ onStart, onSettings }) {
               { v:'AI', l:'맞춤 큐레이션' },
             ].map(({ v, l }) => (
               <div key={l} style={{
-                background:'#fff', border:'1px solid var(--w-line-alternative)',
+                background:'var(--w-bg-elevated)', border:'1px solid var(--w-line-alternative)',
                 borderRadius:12, padding:'14px 12px',
                 display:'flex', flexDirection:'column', alignItems:'center', gap:4,
               }}>
@@ -92,7 +92,7 @@ function HomeView({ onStart, onSettings }) {
             all:'unset', cursor:'pointer', width:'100%',
             display:'flex', alignItems:'center', justifyContent:'space-between',
             padding:'10px 14px', borderRadius:12,
-            background:'#fff', border:'1px solid var(--w-line-alternative)',
+            background:'var(--w-bg-elevated)', border:'1px solid var(--w-line-alternative)',
             boxSizing:'border-box',
           }}>
             <div style={{ display:'flex', alignItems:'center', gap:6 }}>

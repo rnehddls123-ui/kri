@@ -270,7 +270,7 @@ JSON 출력 (days 배열, 요소 ${numDays}개):
       </div>
 
       {/* Day header card — data style */}
-      <div style={{ margin:'0 20px 14px', borderRadius:16, background:'#fff', border:'1px solid var(--w-line-alternative)', overflow:'hidden' }}>
+      <div style={{ margin:'0 20px 14px', borderRadius:16, background:'var(--w-bg-elevated)', border:'1px solid var(--w-line-alternative)', overflow:'hidden' }}>
         <div style={{ padding:'16px 18px 14px', borderBottom:'1px solid var(--w-line-alternative)' }}>
           <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
             <span style={{ fontFamily:'var(--w-font-mono)', fontSize:10, fontWeight:700, letterSpacing:'0.07em', textTransform:'uppercase', color:'var(--w-label-assistive)' }}>
@@ -439,7 +439,7 @@ function GeneratingItin() {
 
   return (
     <PhoneShell scroll={false}>
-      <div style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 32px', background:'#F8F9FA' }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 32px', background:'var(--w-bg-normal)' }}>
         <Eyebrow tone="brand">AI 일정 생성</Eyebrow>
         <div style={{ height:10 }} />
         <Heading>{"캐릭터 취향으로\n동선을 짜는 중이에요"}</Heading>
