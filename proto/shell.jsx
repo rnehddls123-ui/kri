@@ -177,13 +177,10 @@ function buildDayNodes(placeIds, dayIdx, totalDays, inputs, PLACES) {
   const airMinNRT = 70, airMinHND = 35;
   const airFeeNRT = 3070, airFeeHND = 520;
 
-  // Resolve lodgings array — fall back to single-lodging
   const lodgings = (inputs.lodgings && inputs.lodgings.length > 0)
     ? inputs.lodgings
     : [{ area: inputs.lodging || '숙소', nights: Math.max(1, totalDays - 1) }];
 
-  // Which lodging is "tonight" (the one slept in after day K)?
-  // On departure day we don't sleep anywhere — use last night's lodging for checkout
   const tonightLodging = isDeparture
     ? (getLodgingForNight(dayIdx - 1, lodgings) || '숙소')
     : (getLodgingForNight(dayIdx, lodgings) || '숙소');
@@ -191,14 +188,30 @@ function buildDayNodes(placeIds, dayIdx, totalDays, inputs, PLACES) {
     ? (getLodgingForNight(dayIdx - 1, lodgings) || '숙소')
     : null;
 
-  // Lodging changes when the morning lodging ≠ tonight's lodging (non-arrival, non-departure)
   const isLodgingChangeDay = !isArrival && !isDeparture
     && lastNightLodging && tonightLodging
     && lastNightLodging !== tonightLodging;
 
-  let cur = inputs.wake === '느긋하게' ? '11:00' : '09:00';
+  // ── Time-anchor config ─────────────────────────────────────────
+  // Slots are chosen so activities land at meal windows:
+  //   4-slot: morning → lunch(12시) → afternoon → dinner(18~19시)
+  //   3-slot: brunch(09:30) → lunch(13:00) → dinner(18:30)
+  //   2-slot: late morning(10:00) → late afternoon(16:00)
+  const lateWake = inputs.wake === '느긋하게';
+  const PACE_SLOTS = {
+    '빡빡하게': lateWake ? ['11:00','13:30','16:00','19:00'] : ['09:00','12:00','15:00','18:30'],
+    '보통':     lateWake ? ['11:30','14:00','19:00']         : ['09:30','13:00','18:30'],
+    '여유롭게': lateWake ? ['12:00','17:30']                  : ['10:00','16:00'],
+  };
 
-  // ── Day-start transit / check-in ──────────────────────────────
+  function toMin(t) {
+    const [h, m] = (t || '09:00').split(':').map(Number);
+    return h * 60 + m;
+  }
+
+  let cur = lateWake ? '11:00' : '09:00';
+
+  // ── Day-start: arrival / lodging change ───────────────────────
   if (isArrival) {
     const lodging1 = getLodgingForNight(1, lodgings) || '숙소';
     const airMin   = arrAirport === 'NRT' ? airMinNRT : airMinHND;
@@ -210,7 +223,6 @@ function buildDayNodes(placeIds, dayIdx, totalDays, inputs, PLACES) {
     nodes.push({ type:'stay', title:`${lodging1} 체크인`, start:airEnd, end:checkEnd, fixed:true });
     cur = checkEnd;
   } else if (isLodgingChangeDay) {
-    // Morning: checkout from lastNightLodging, transit to tonightLodging, checkin
     const checkoutEnd = addMin(cur, 60);
     nodes.push({ type:'stay', title:`${lastNightLodging} 체크아웃`, start:cur, end:checkoutEnd, fixed:true });
     cur = checkoutEnd;
@@ -222,32 +234,51 @@ function buildDayNodes(placeIds, dayIdx, totalDays, inputs, PLACES) {
     cur = checkinEnd;
   }
 
-  // ── Places ────────────────────────────────────────────────────
-  for (const id of placeIds) {
+  // ── Places — time-anchored for full days, sequential for arrival/departure ──
+  // Full days: use PACE_SLOTS so meals fall at correct meal times
+  // Arrival/departure: just 1-2 places, no anchor needed
+  const slots = (!isArrival && !isDeparture)
+    ? (PACE_SLOTS[inputs.pace || '보통'] || PACE_SLOTS['보통'])
+    : lateWake ? ['14:00','17:30'] : ['11:30','15:30'];
+
+  let prevEnd = cur;
+  for (let i = 0; i < placeIds.length; i++) {
+    const id = placeIds[i];
     const p = PLACES[id];
     if (!p) continue;
-    const walkEnd = addMin(cur, 10);
-    nodes.push({ type:'transit', mode:'도보', min:10, start:cur, end:walkEnd });
-    cur = addMin(walkEnd, 2);
-    const stayEnd = addMin(cur, p.stay || 60);
-    nodes.push({ type:'place', id, start:cur, end:stayEnd });
-    cur = stayEnd;
-  }
 
-  // ── Day-end: airport or return to lodging ─────────────────────
+    const anchor   = slots[i];
+    const anchorM  = anchor ? toMin(anchor) : null;
+    const prevEndM = toMin(prevEnd);
+
+    // Use anchor if it's comfortably after current position; else sequential gap
+    const placeStart = (anchorM && anchorM > prevEndM + 20)
+      ? anchor
+      : addMin(prevEnd, i === 0 ? 15 : 45);
+
+    const transitMode = inputs.transport === '도보 중심' ? '도보'
+                      : i === 0 ? '도보' : '지하철·도보';
+    const transitMins = Math.max(10, Math.min(toMin(placeStart) - prevEndM, 60));
+    nodes.push({ type:'transit', mode:transitMode, min:transitMins, start:prevEnd, end:placeStart });
+
+    const stayEnd = addMin(placeStart, p.stay || 60);
+    nodes.push({ type:'place', id, start:placeStart, end:stayEnd });
+    prevEnd = stayEnd;
+  }
+  cur = prevEnd;
+
+  // ── Day-end: airport or lodging return ────────────────────────
   if (isDeparture) {
-    const airMin   = depAirport === 'NRT' ? airMinNRT : airMinHND;
-    const airFee   = depAirport === 'NRT' ? airFeeNRT : airFeeHND;
-    const airMode  = depAirport === 'NRT' ? '나리타 익스프레스' : '공항 모노레일';
+    const airMin    = depAirport === 'NRT' ? airMinNRT : airMinHND;
+    const airFee    = depAirport === 'NRT' ? airFeeNRT : airFeeHND;
+    const airMode   = depAirport === 'NRT' ? '나리타 익스프레스' : '공항 모노레일';
     const depLeave  = addMin(depTime, -(airMin + 120));
     const depArrive = addMin(depTime, -120);
-    // Checkout before transit
     const checkoutTime = addMin(depLeave, -30);
     nodes.push({ type:'stay', title:`${tonightLodging} 체크아웃`, start:checkoutTime, end:depLeave, fixed:true });
     nodes.push({ type:'transit', from:tonightLodging, to:depAirport, mode:airMode, min:airMin, fee:airFee, start:depLeave, end:depArrive });
     nodes.push({ type:'checkin', title:`${depAirport} 공항 도착`, start:depArrive, fixed:true, note:'출발 2시간 전' });
   } else {
-    // Return to tonight's lodging
     const transitEnd = addMin(cur, 20);
     nodes.push({ type:'transit', mode:'지하철·도보', min:20, start:cur, end:transitEnd, to:tonightLodging });
     nodes.push({ type:'stay', title:`${tonightLodging} 귀환`, start:transitEnd, end:transitEnd });
@@ -579,9 +610,10 @@ function GoogleMap({ pins = [], onPin, height = '100%', interactive = false }) {
 // ══════════════════════════════════════════════════════════════
 function PhoneShell({ children, dark=false, footer, scroll=true, overlay }) {
   return (
-    <IOSDevice width={390} height={820} dark={dark}>
+    <IOSDevice width={390} dark={dark}>
       <div className={"ts-screen" + (dark ? " ts-screen--ink" : "")}>
-        <div style={{ height:48, flexShrink:0 }} />
+        {/* No iOS status bar → use small safe-area top pad instead of 48px */}
+        <div style={{ height:12, flexShrink:0 }} />
         <div style={{ flex:1, minHeight:0, overflowY:scroll?"auto":"hidden", overflowX:"hidden", display:"flex", flexDirection:"column" }}>
           {children}
         </div>
