@@ -99,6 +99,8 @@ ${numDays > 2 ? `Day 2~${numDays-1}(풀데이): placeIds ${dayPlaces}개씩` : '
 Day ${numDays}(출국일): placeIds 1~2개만
 - 메인취향(${catMain}) 장소 최우선, 서브취향(${catSub || '없음'}) 혼합
 - 같은 날은 같은 권역 장소 묶어 이동 최소화
+- 풀데이(Day 2~${Math.max(2,numDays-1)})에는 반드시 음식·맛집 또는 카페·디저트 장소를 포함 (점심·저녁용)
+- placeIds 배열 순서 = 방문 시간순 (오전 → 점심 → 오후 → 저녁)
 - placeIds: 위 목록의 ID를 그대로 복사 (절대 임의 생성 금지)
 
 JSON 출력 (days 배열, 요소 ${numDays}개):
@@ -364,17 +366,34 @@ function StayRow({ n }) {
   );
 }
 
+function mealLabel(startTime) {
+  const h = parseInt(startTime?.split(':')[0] ?? '12');
+  if (h >= 7  && h < 10) return { icon:'☀️', txt:'아침' };
+  if (h >= 11 && h < 14) return { icon:'🍽', txt:'점심' };
+  if (h >= 18 && h < 21) return { icon:'🌙', txt:'저녁' };
+  return null;
+}
+
 function PlaceRow({ n, num, onOpen }) {
   const p = (window.__runtimePlaces || PLACES)[n.id];
   if (!p) return null;
+  const isMealCat = p.category === '음식·맛집' || p.category === '카페·디저트';
+  const meal = isMealCat ? mealLabel(n.start) : null;
   return (
     <button onClick={() => onOpen(n.id)}
       style={{ all:'unset', display:'block', width:'100%', cursor:'pointer', position:'relative', padding:'8px 0 16px' }}>
       <div style={{ position:'absolute', left:-25, top:6, width:20, height:20, borderRadius:9999, background:'var(--w-bg-normal)', border:'3px solid var(--w-primary)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:700, color:'var(--w-primary)', fontFamily:'var(--w-font-mono)' }}>
         {num}
       </div>
-      <div style={{ fontFamily:'var(--w-font-mono)', fontSize:11, color:'var(--w-label-alternative)', fontWeight:700, letterSpacing:'0.02em' }}>
-        {n.start} - {n.end}
+      <div style={{ display:'flex', alignItems:'center', gap:6, marginBottom:1 }}>
+        <span style={{ fontFamily:'var(--w-font-mono)', fontSize:11, color:'var(--w-label-alternative)', fontWeight:700, letterSpacing:'0.02em' }}>
+          {n.start} - {n.end}
+        </span>
+        {meal && (
+          <span style={{ fontSize:10, fontWeight:700, padding:'2px 6px', borderRadius:4, background:'rgba(255,94,0,0.10)', color:'var(--w-accent-redorange)' }}>
+            {meal.icon} {meal.txt}
+          </span>
+        )}
       </div>
       <div style={{ fontSize:15, fontWeight:700, marginTop:2, letterSpacing:'-0.005em', color:'var(--w-label-normal)' }}>
         {p.name}
