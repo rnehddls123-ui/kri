@@ -95,7 +95,50 @@ const CHARACTERS = {
 
 function pickCharacter(catMain, catSub) {
   const key = (catMain || "") + "|" + (catSub || "");
-  return CHARACTERS[key] || CHARACTERS["음식·맛집|쇼핑·편집샵"];
+  if (CHARACTERS[key]) return CHARACTERS[key];
+
+  // ── Dynamic fallback: varies by selected categories ──────────
+  // (Used when Gemini fails — shows a unique character per category combo)
+  const REGION = {
+    "음식·맛집":"우에노",     "카페·디저트":"시모키타자와", "쇼핑·편집샵":"다이칸야마",
+    "플리마켓·빈티지":"시모키타자와", "예술·전시":"롯폰기",    "문화·역사·신사":"아사쿠사",
+    "서브컬처":"아키하바라",  "자연·공원":"우에노공원",    "야경·뷰":"시부야",
+    "체험·액티비티":"에비스", "온천·휴식":"야네센",         "근교·당일":"신주쿠",
+    "현지인 골목":"야네센",
+  };
+  const VERB = {
+    "음식·맛집":"먹방 찍는",       "카페·디저트":"카페 투어하는",  "쇼핑·편집샵":"편집샵 순례하는",
+    "플리마켓·빈티지":"빈티지 고르는", "예술·전시":"전시 섭렵하는",  "문화·역사·신사":"신사 순례하는",
+    "서브컬처":"굿즈 사냥하는",    "자연·공원":"공원 산책하는",   "야경·뷰":"야경 감상하는",
+    "체험·액티비티":"체험 모으는", "온천·휴식":"온천 다니는",      "근교·당일":"당일치기하는",
+    "현지인 골목":"골목 탐험하는",
+  };
+  const ADJ = {
+    "음식·맛집":"먹방러",         "카페·디저트":"카페인 중독자", "쇼핑·편집샵":"쇼핑 중독자",
+    "플리마켓·빈티지":"빈티지 콜렉터", "예술·전시":"아트 수집가",  "문화·역사·신사":"역사덕후",
+    "서브컬처":"찐덕후",           "자연·공원":"힐링 수집가",     "야경·뷰":"뷰 포인터",
+    "체험·액티비티":"액티비티 조커", "온천·휴식":"릴렉스 마스터", "근교·당일":"당일치기 마스터",
+    "현지인 골목":"골목 탐험가",
+  };
+
+  // Stable hue derived from catMain string (same input → same colour, different input → different)
+  const hash = [...(catMain || "기본")].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) | 0, 17);
+  const hue  = Math.abs(hash % 360);
+  const hi   = `hsl(${hue}, 88%, 78%)`;
+  const mid  = `hsl(${hue}, 82%, 50%)`;
+  const lo   = `hsl(${(hue + 30) % 360}, 78%, 26%)`;
+
+  const region = REGION[catMain] || "신주쿠";
+  const verb   = VERB[catMain]   || "여행하는";
+  const adj    = ADJ[catSub]     || ADJ[catMain] || "취향 수집가";
+
+  return {
+    name:     `${region}에서 ${verb} ${adj}`,
+    region,
+    keywords: [catMain, catSub, "도쿄 로컬"].filter(Boolean),
+    oneLine:  `${catMain} 취향으로 도쿄를 즐기는 스타일이에요. 나만의 동선이 있어요.`,
+    hi, mid, lo,
+  };
 }
 
 // ───── Mock place library ─────
