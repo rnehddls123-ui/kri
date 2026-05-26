@@ -728,4 +728,70 @@ const TOKYO_DISTRICTS = [
   { name:"이케부쿠로" },
 ];
 
-Object.assign(window, { PhoneShell, ProgressBar, PageBar, Cta, PickCard, Chip, CharacterOrb, GoogleMap, TOKYO_DISTRICTS, Eyebrow, Heading, Sub });
+// ── Category color map & tag ──────────────────────────────────
+const CAT_COLOR = {
+  '음식·맛집':      { bg:'rgba(249,115,22,0.09)', color:'#C2410C', dot:'#F97316' },
+  '카페·디저트':    { bg:'rgba(180,83,9,0.09)',   color:'#92400E', dot:'#B45309' },
+  '쇼핑·편집샵':    { bg:'rgba(139,92,246,0.09)', color:'#6D28D9', dot:'#8B5CF6' },
+  '플리마켓·빈티지':{ bg:'rgba(16,185,129,0.09)', color:'#065F46', dot:'#10B981' },
+  '예술·전시':      { bg:'rgba(59,130,246,0.09)', color:'#1D4ED8', dot:'#3B82F6' },
+  '문화·역사·신사': { bg:'rgba(239,68,68,0.09)',  color:'#991B1B', dot:'#EF4444' },
+  '서브컬처':       { bg:'rgba(124,58,237,0.09)', color:'#5B21B6', dot:'#7C3AED' },
+  '자연·공원':      { bg:'rgba(34,197,94,0.09)',  color:'#14532D', dot:'#22C55E' },
+  '야경·뷰':        { bg:'rgba(99,102,241,0.09)', color:'#3730A3', dot:'#6366F1' },
+  '현지인 골목':    { bg:'rgba(234,179,8,0.09)',  color:'#78350F', dot:'#EAB308' },
+  '체험·액티비티':  { bg:'rgba(20,184,166,0.09)', color:'#134E4A', dot:'#14B8A6' },
+  '온천·휴식':      { bg:'rgba(236,72,153,0.09)', color:'#831843', dot:'#EC4899' },
+  '근교·당일':      { bg:'rgba(168,85,247,0.09)', color:'#581C87', dot:'#A855F7' },
+};
+
+function CategoryTag({ cat, size='sm' }) {
+  const c = CAT_COLOR[cat] || { bg:'var(--w-fill-normal)', color:'var(--w-label-alternative)', dot:'#888' };
+  return (
+    <span style={{
+      display:'inline-flex', alignItems:'center', gap:4,
+      padding: size==='lg' ? '5px 10px' : '3px 8px',
+      borderRadius:6,
+      background:c.bg, color:c.color,
+      fontSize: size==='lg' ? 12 : 10, fontWeight:700, letterSpacing:'0.02em',
+    }}>
+      <span style={{ width:5, height:5, borderRadius:'50%', background:c.dot, flexShrink:0 }} />
+      {cat}
+    </span>
+  );
+}
+
+// ── DataStat — big number + small label ───────────────────────
+function DataStat({ value, label, accent }) {
+  return (
+    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3 }}>
+      <div style={{
+        fontFamily:'var(--w-font-mono)', fontSize:18, fontWeight:700,
+        letterSpacing:'-0.01em', color:accent||'var(--w-label-normal)', lineHeight:1,
+      }}>
+        {value}
+      </div>
+      <div style={{
+        fontSize:9, fontWeight:700, letterSpacing:'0.07em',
+        textTransform:'uppercase', color:'var(--w-label-assistive)',
+      }}>
+        {label}
+      </div>
+    </div>
+  );
+}
+
+// ── DataRow — label | value horizontal row ────────────────────
+function DataRow({ label, value }) {
+  return (
+    <div style={{
+      display:'flex', alignItems:'center', justifyContent:'space-between',
+      padding:'9px 0', borderBottom:'1px solid var(--w-line-alternative)',
+    }}>
+      <span style={{ fontSize:12, fontWeight:600, color:'var(--w-label-alternative)' }}>{label}</span>
+      <span style={{ fontSize:13, fontWeight:700, color:'var(--w-label-normal)' }}>{value}</span>
+    </div>
+  );
+}
+
+Object.assign(window, { PhoneShell, ProgressBar, PageBar, Cta, PickCard, Chip, CharacterOrb, GoogleMap, TOKYO_DISTRICTS, Eyebrow, Heading, Sub, CategoryTag, CAT_COLOR, DataStat, DataRow });
