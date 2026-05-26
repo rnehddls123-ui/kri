@@ -145,6 +145,7 @@ function buildDayNodes(placeIds, dayIdx, totalDays, inputs, PLACES) {
   const airMinNRT = 70, airMinHND = 35;
   const airFeeNRT = 3070, airFeeHND = 520;
 
+  const lodgingLabel = inputs.lodging || '숙소';
   let cur = inputs.wake === '느긋하게' ? '11:00' : '09:00';
 
   if (isArrival) {
@@ -152,9 +153,9 @@ function buildDayNodes(placeIds, dayIdx, totalDays, inputs, PLACES) {
     const airFee  = arrAirport === 'NRT' ? airFeeNRT : airFeeHND;
     const airMode = arrAirport === 'NRT' ? '나리타 익스프레스' : '공항 모노레일';
     const airEnd  = addMin(arrTime, airMin + 5);
-    nodes.push({ type:'transit', from:arrAirport, to:'숙소', mode:airMode, min:airMin, fee:airFee, start:arrTime, end:airEnd });
+    nodes.push({ type:'transit', from:arrAirport, to:lodgingLabel, mode:airMode, min:airMin, fee:airFee, start:arrTime, end:airEnd });
     const checkEnd = addMin(airEnd, 60);
-    nodes.push({ type:'stay', title:'숙소 체크인', start:airEnd, end:checkEnd, fixed:true });
+    nodes.push({ type:'stay', title:`${lodgingLabel} 체크인`, start:airEnd, end:checkEnd, fixed:true });
     cur = checkEnd;
   }
 
@@ -175,10 +176,10 @@ function buildDayNodes(placeIds, dayIdx, totalDays, inputs, PLACES) {
     const airMode = depAirport === 'NRT' ? '나리타 익스프레스' : '공항 모노레일';
     const depLeave  = addMin(depTime, -(airMin + 120));
     const depArrive = addMin(depTime, -120);
-    nodes.push({ type:'transit', from:'숙소', to:depAirport, mode:airMode, min:airMin, fee:airFee, start:depLeave, end:depArrive });
+    nodes.push({ type:'transit', from:lodgingLabel, to:depAirport, mode:airMode, min:airMin, fee:airFee, start:depLeave, end:depArrive });
     nodes.push({ type:'checkin', title:`${depAirport} 공항 도착`, start:depArrive, fixed:true, note:'출발 2시간 전' });
   } else if (!isArrival) {
-    nodes.push({ type:'transit', mode:'도보', min:10, start:cur, end:addMin(cur,10), to:'숙소' });
+    nodes.push({ type:'transit', mode:'도보', min:10, start:cur, end:addMin(cur,10), to:lodgingLabel });
   }
 
   return nodes;
@@ -343,7 +344,7 @@ const MAPS_STYLE = [
   { featureType:'all',           elementType:'labels.text.stroke', stylers:[{color:'#ffffff'}] },
 ];
 
-function GoogleMap({ pins = [], onPin, height = '100%' }) {
+function GoogleMap({ pins = [], onPin, height = '100%', interactive = false }) {
   const containerRef = useRef(null);
   const mapRef       = useRef(null);
   const markersRef   = useRef([]);
@@ -364,11 +365,22 @@ function GoogleMap({ pins = [], onPin, height = '100%' }) {
     mapRef.current = new window.google.maps.Map(containerRef.current, {
       center: { lat: 35.685, lng: 139.755 },
       zoom: 12,
-      disableDefaultUI: true,
-      gestureHandling: 'none',
+      disableDefaultUI: !interactive,
+      zoomControl: interactive,
+      gestureHandling: interactive ? 'cooperative' : 'none',
       styles: MAPS_STYLE,
     });
   }, [ready]);
+
+  // Update gesture/zoom options when interactive prop changes
+  useEffect(() => {
+    if (!mapRef.current) return;
+    mapRef.current.setOptions({
+      gestureHandling: interactive ? 'cooperative' : 'none',
+      zoomControl: interactive,
+      disableDefaultUI: !interactive,
+    });
+  }, [interactive]);
 
   // Update markers when pins change
   useEffect(() => {
