@@ -63,73 +63,81 @@ function Itinerary({ character, inputs, onBack, openPlace, onOpenPlace, onCloseP
 
       if (provider) {
         try {
-          const placeList = Object.entries(activePlaces)
-            .map(([id, p]) => `${id} | ${p.name} | ${p.region} | ${p.category} | 가격:${p.price}`)
+          const catMain  = inputs.categoryMain;
+          const catSub   = inputs.categorySub;
+          const dayPlaces = { '빡빡하게': 4, '보통': 3, '여유롭게': 2 }[inputs.pace] || 3;
+
+          // Build a relevance-sorted place list (top 22) so the prompt stays focused
+          // Main-category places first, then sub, then others — each group sorted by rating
+          const sortedForPrompt = Object.entries(activePlaces).sort(([,a], [,b]) => {
+            const sa = a.category === catMain ? 3 : a.category === catSub ? 2 : 1;
+            const sb = b.category === catMain ? 3 : b.category === catSub ? 2 : 1;
+            if (sa !== sb) return sb - sa;
+            return (b.rating || 0) - (a.rating || 0);
+          }).slice(0, 22);
+
+          const placeList = sortedForPrompt
+            .map(([id, p]) => `${id}|${p.name}|${p.region}|${p.category}|${p.price}`)
             .join('\n');
 
-          const dayPlaces = { '빡빡하게': 4, '보통': 3, '여유롭게': 2 }[inputs.pace] || 3;
-          const midDays   = numDays - 2;
+          console.log(`[Itinerary] LLM 호출 — ${numDays}일, 페이스:${dayPlaces}곳/일, 장소 ${sortedForPrompt.length}개, 메인:${catMain}, 서브:${catSub}`);
 
-          const { text } = await callLLM(
-            `여행자 정보:
-캐릭터: ${character.name} (권역: ${character.region})
-메인카테고리: ${inputs.categoryMain}
-서브카테고리: ${inputs.categorySub}
-분위기: ${inputs.mood}
-동행: ${inputs.companions}
-페이스: ${inputs.pace} (하루 약 ${dayPlaces}곳)
-기상: ${inputs.wake}
-예산: ${inputs.budget}
+          const { text, model: usedModel } = await callLLM(
+`[여행자 프로필]
+캐릭터: ${character.name} | 권역: ${character.region}
+메인취향: ${catMain} | 서브취향: ${catSub || '없음'}
+분위기: ${inputs.mood} | 동행: ${inputs.companions}
+페이스: ${inputs.pace} (하루 ${dayPlaces}곳) | 기상: ${inputs.wake}
+예산: ${inputs.budget} | 체력: ${inputs.stamina || '보통'}
 
-사용 가능한 장소 목록 (id | 이름 | 권역 | 카테고리 | 가격):
+[장소 목록 — ID|이름|권역|카테고리|가격 — 반드시 이 ID만 사용]
 ${placeList}
 
-위 여행자에게 맞는 ${numDays}일 일정을 JSON으로 만들어주세요.
-- Day 1 (도착일): 2곳 이하 (공항→숙소→장소)
-${midDays > 0 ? `- Day 2~${numDays-1} (풀데이): ${dayPlaces}곳씩` : ''}
-- Day ${numDays} (출발일): 2곳 이하 (장소→공항)
-- 메인카테고리 취향 우선, 서브카테고리 혼합
-- 같은 날은 가능하면 같은 권역 장소 묶기 (이동 최소화)
-- placeIds는 반드시 위 목록의 id만 사용 (임의로 만들지 말 것)
+[일정 생성 요청: ${numDays}일]
+Day 1(도착일): placeIds 1~2개만
+${numDays > 2 ? `Day 2~${numDays-1}(풀데이): placeIds ${dayPlaces}개씩` : ''}
+Day ${numDays}(출국일): placeIds 1~2개만
+- 메인취향(${catMain}) 장소 최우선, 서브취향(${catSub || '없음'}) 혼합
+- 같은 날은 같은 권역 장소 묶어 이동 최소화
+- placeIds: 위 목록의 ID를 그대로 복사 (절대 임의 생성 금지)
 
-JSON 형식 (days 배열 ${numDays}개):
-{
-  "days": [
-    {
-      "idx": 1,
-      "area": "권역명",
-      "title": "감성 2줄 제목\\n(\\n으로 줄구분)",
-      "desc": "3~4줄 에디토리얼 설명 (구어체, 요체 종결)",
-      "placeIds": ["id1", "id2"],
-      "fatigue": 5.0,
-      "budget": 12000,
-      "walking": 40
-    }
-  ]
-}`,
-            `당신은 도쿄 여행 큐레이터입니다.
-규칙:
-1. 메인카테고리 취향에 맞는 장소를 가장 많이 선택
-2. 하루 안에 같은 권역 장소를 묶어 이동 최소화
-3. title: 캐릭터 취향 반영, 감성적 2줄 카피 (관광 안내 어조 금지)
-4. desc: 29cm·토스 스타일 구어체, 소설적 표현 금지, 그날 일정이 머릿속에 그려져야 함
-5. placeIds: 반드시 제공된 목록의 id만 사용 (없는 id 절대 금지)
-6. JSON만 출력 (코드블록·설명 없이)`,
-            1400
+JSON 출력 (days 배열, 요소 ${numDays}개):
+{"days":[{"idx":1,"area":"권역명","title":"감성 제목\\n2줄","desc":"구어체 설명 2~3문장","placeIds":["위목록ID"],"fatigue":5.5,"budget":12000,"walking":40}]}`,
+`도쿄 여행 큐레이터. 반드시 JSON만 출력. 코드블록·마크다운 절대 금지. placeIds는 제공된 목록의 ID만 사용.`,
+            2500
           );
 
+          console.log(`[Itinerary] LLM 응답 수신 (${usedModel}), 길이: ${text.length}자`);
+          console.log('[Itinerary] 응답 미리보기:', text.slice(0, 200));
+
           const d = parseJSON(text);
-          if (d.days && Array.isArray(d.days) && d.days.length > 0) {
-            result = buildItinerary(d.days, inputs, activePlaces);
-            if (!cancelled) setUsedProvider(provider);
+          if (d?.days && Array.isArray(d.days) && d.days.length > 0) {
+            // Validate: at least one day has placeIds that exist in activePlaces
+            const validDays = d.days.filter(day =>
+              (day.placeIds || []).some(id => activePlaces[id])
+            );
+            if (validDays.length > 0) {
+              result = buildItinerary(d.days, inputs, activePlaces);
+              if (!cancelled) setUsedProvider(provider);
+              console.log(`[Itinerary] ✓ AI 일정 생성 완료 — ${d.days.length}일, 유효일수: ${validDays.length}`);
+            } else {
+              console.warn('[Itinerary] AI가 유효한 placeIds를 하나도 반환하지 않음 — 폴백 사용');
+              console.warn('[Itinerary] AI placeIds 예시:', d.days[0]?.placeIds);
+            }
+          } else {
+            console.warn('[Itinerary] JSON 파싱 실패 또는 days 배열 없음');
           }
         } catch (err) {
-          console.warn('[Itinerary] AI failed, using mock:', err.message);
+          console.warn('[Itinerary] AI 호출 실패:', err.message);
         }
       }
 
-      // Fallback: hardcoded mock
-      if (!result) result = ITINERARY;
+      // Fallback: dynamic itinerary respecting the user's actual categories + pace
+      // (never falls back to the hardcoded 2025-11-22 ITINERARY constant)
+      if (!result) {
+        console.log('[Itinerary] 동적 폴백 사용 — catMain:', inputs.categoryMain);
+        result = buildDynamicFallback(inputs, activePlaces, numDays);
+      }
 
       const elapsed = Date.now() - start;
       if (elapsed < 2600) await sleep(2600 - elapsed);

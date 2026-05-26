@@ -258,11 +258,11 @@ function buildDayNodes(placeIds, dayIdx, totalDays, inputs, PLACES) {
 
 function buildItinerary(aiDays, inputs, PLACES) {
   const weekdays = ['일','월','화','수','목','금','토'];
-  const baseDate  = new Date(inputs.arrDate || '2025-11-22');
+  const baseDate  = new Date(inputs.arrDate || new Date().toISOString().slice(0,10));
   return {
-    arrival:   { airport:inputs.arrAirport||'NRT', date:inputs.arrDate||'2025-11-22', time:inputs.arrTime||'14:30', weekday:weekdays[baseDate.getDay()] },
-    departure: { airport:inputs.depAirport||'NRT', date:inputs.depDate||'2025-11-25', time:inputs.depTime||'17:30', weekday:weekdays[new Date(inputs.depDate||'2025-11-25').getDay()] },
-    lodging: inputs.lodging || '도쿄',
+    arrival:   { airport:inputs.arrAirport||'NRT', date:inputs.arrDate||baseDate.toISOString().slice(0,10), time:inputs.arrTime||'14:30', weekday:weekdays[baseDate.getDay()] },
+    departure: { airport:inputs.depAirport||'NRT', date:inputs.depDate||new Date(baseDate.getTime()+3*86400000).toISOString().slice(0,10), time:inputs.depTime||'17:30', weekday:weekdays[new Date(inputs.depDate||'').getDay()||0] },
+    lodging: inputs.lodgings?.map(l=>`${l.area}(${l.nights}박)`).join(' → ') || inputs.lodging || '도쿄',
     days: aiDays.map((d, i) => {
       const dayDate = new Date(baseDate);
       dayDate.setDate(baseDate.getDate() + i);
@@ -283,6 +283,56 @@ function buildItinerary(aiDays, inputs, PLACES) {
       };
     }),
   };
+}
+
+// Dynamic fallback itinerary — personalised even when AI is unavailable
+// Uses the user's category preferences to pick real places from the active pool
+function buildDynamicFallback(inputs, PLACES, numDays) {
+  const catMain  = inputs.categoryMain;
+  const catSub   = inputs.categorySub;
+  const dayCount = { '빡빡하게': 4, '보통': 3, '여유롭게': 2 }[inputs.pace] || 3;
+
+  const byRating = arr => [...arr].sort((a, b) => (b[1].rating || 0) - (a[1].rating || 0));
+  const mainPool  = byRating(Object.entries(PLACES).filter(([,p]) => p.category === catMain));
+  const subPool   = byRating(Object.entries(PLACES).filter(([,p]) => catSub && p.category === catSub && p.category !== catMain));
+  const otherPool = byRating(Object.entries(PLACES).filter(([,p]) => p.category !== catMain && p.category !== catSub));
+  const pool = [...mainPool, ...subPool, ...otherPool];
+  // Absolute last resort if no category match
+  if (pool.length === 0) pool.push(...Object.entries(PLACES).slice(0, 12));
+
+  const budgetYen = { '절약': 7000, '보통': 13000, '프리미엄': 24000 }[inputs.budget] || 12000;
+  const walkMin   = { '높음': 55, '보통': 40, '낮음': 22 }[inputs.stamina] || 40;
+
+  const aiDays = Array.from({ length: numDays }, (_, i) => {
+    const isFirst = i === 0;
+    const isLast  = i === numDays - 1;
+    const cnt = isFirst || isLast ? Math.min(2, dayCount) : dayCount;
+
+    // Round-robin through pool so each day gets different places
+    const placeIds = Array.from({ length: cnt }, (_, j) => {
+      const idx = (i * dayCount + j) % pool.length;
+      return pool[idx]?.[0];
+    }).filter(Boolean);
+
+    const sample = PLACES[placeIds[0]];
+    return {
+      idx:     i + 1,
+      area:    sample?.region || '도쿄',
+      title:   isFirst ? '도착 첫날\n설레는 시작이에요'
+               : isLast  ? '마지막 날\n아쉬운 발걸음'
+               : `${catMain || '도쿄'} 취향대로\n하루를 채워요`,
+      desc:    isFirst ? '입국 후 첫 코스. 짐 풀고 바로 나와요.'
+               : isLast  ? '출발 전 마지막 동선.'
+               : `${catMain}${catSub ? ' + ' + catSub : ''} 취향으로 묶은 하루예요.`,
+      placeIds,
+      fatigue: parseFloat((4 + i * 0.5).toFixed(1)),
+      budget:  budgetYen,
+      walking: walkMin,
+    };
+  });
+
+  console.log('[Fallback] buildDynamicFallback — catMain:', catMain, 'catSub:', catSub, 'pool:', pool.length, 'days:', numDays);
+  return buildItinerary(aiDays, inputs, PLACES);
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -395,7 +445,7 @@ async function fetchTokyoPlaces(inputs) {
   return Object.keys(allPlaces).length > 0 ? allPlaces : null;
 }
 
-Object.assign(window, { callLLM, parseJSON, callImageGen, canGenerateImage, imageProviderLabel, sleep, hasGemini, buildItinerary, addMin, buildDayNodes, getLodgingForNight, fetchTokyoPlaces, CAT_QUERIES });
+Object.assign(window, { callLLM, parseJSON, callImageGen, canGenerateImage, imageProviderLabel, sleep, hasGemini, buildItinerary, buildDynamicFallback, addMin, buildDayNodes, getLodgingForNight, fetchTokyoPlaces, CAT_QUERIES });
 
 // ══════════════════════════════════════════════════════════════
 // Google Maps component
