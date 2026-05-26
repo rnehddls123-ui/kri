@@ -478,6 +478,30 @@ async function fetchTokyoPlaces(inputs) {
 
 Object.assign(window, { callLLM, parseJSON, callImageGen, canGenerateImage, imageProviderLabel, sleep, hasGemini, buildItinerary, buildDynamicFallback, addMin, buildDayNodes, getLodgingForNight, fetchTokyoPlaces, CAT_QUERIES });
 
+// ── Toast notification ─────────────────────────────────────────
+function Toast({ message, onDone }) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const r = requestAnimationFrame(() => setVisible(true));
+    const t = setTimeout(() => { setVisible(false); setTimeout(onDone, 280); }, 2200);
+    return () => { cancelAnimationFrame(r); clearTimeout(t); };
+  }, []);
+  return (
+    <div style={{
+      position:'fixed', bottom:32, left:'50%', transform:`translateX(-50%) translateY(${visible?'0':'12px'})`,
+      opacity:visible?1:0, transition:'all 260ms cubic-bezier(.4,0,.2,1)',
+      background:'var(--w-cool-22)', color:'#fff',
+      padding:'10px 18px', borderRadius:9999,
+      fontSize:13, fontWeight:700, letterSpacing:'0.01em',
+      whiteSpace:'nowrap', zIndex:999,
+      boxShadow:'0 4px 16px rgba(0,0,0,0.22)',
+      pointerEvents:'none',
+    }}>
+      {message}
+    </div>
+  );
+}
+
 // ══════════════════════════════════════════════════════════════
 // Google Maps component
 // ══════════════════════════════════════════════════════════════
@@ -794,4 +818,4 @@ function DataRow({ label, value }) {
   );
 }
 
-Object.assign(window, { PhoneShell, ProgressBar, PageBar, Cta, PickCard, Chip, CharacterOrb, GoogleMap, TOKYO_DISTRICTS, Eyebrow, Heading, Sub, CategoryTag, CAT_COLOR, DataStat, DataRow });
+Object.assign(window, { PhoneShell, ProgressBar, PageBar, Cta, PickCard, Chip, CharacterOrb, GoogleMap, TOKYO_DISTRICTS, Eyebrow, Heading, Sub, CategoryTag, CAT_COLOR, DataStat, DataRow, Toast });

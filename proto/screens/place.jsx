@@ -1,7 +1,14 @@
 // Place detail — slide-up sheet modal
-function PlaceDetail({ placeId, character, onClose }) {
+function PlaceDetail({ placeId, character, onClose, onSwapPlace }) {
   const p = (window.__runtimePlaces || PLACES)[placeId];
   if (!p) return null;
+  const [saved, setSaved] = useState(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem('kri_saved_places') || '[]');
+      return s.includes(placeId);
+    } catch { return false; }
+  });
+  const [toast, setToast] = useState(null);
   // animate in on mount
   const [open, setOpen] = useState(false);
   useEffect(() => {
@@ -11,6 +18,35 @@ function PlaceDetail({ placeId, character, onClose }) {
   function close() {
     setOpen(false);
     setTimeout(onClose, 240);
+  }
+
+  function handleSave() {
+    try {
+      const s = JSON.parse(localStorage.getItem('kri_saved_places') || '[]');
+      if (!saved) {
+        const updated = [...s.filter(id => id !== placeId), placeId];
+        localStorage.setItem('kri_saved_places', JSON.stringify(updated));
+        setSaved(true);
+        setToast('저장됐어요 ✓');
+      } else {
+        const updated = s.filter(id => id !== placeId);
+        localStorage.setItem('kri_saved_places', JSON.stringify(updated));
+        setSaved(false);
+        setToast('저장 해제됐어요');
+      }
+    } catch { setToast('저장 실패'); }
+  }
+
+  function handleSwap() {
+    if (!onSwapPlace) return;
+    const places = window.__runtimePlaces || PLACES;
+    const same = Object.entries(places)
+      .filter(([id, pl]) => id !== placeId && pl.category === p.category)
+      .sort((a, b) => (b[1].rating || 0) - (a[1].rating || 0));
+    if (same.length === 0) { setToast('비슷한 장소가 없어요'); return; }
+    const next = same[0][0];
+    setToast(`${places[next].name}으로 교체할게요`);
+    setTimeout(() => { onSwapPlace(placeId, next); close(); }, 900);
   }
 
   return (
@@ -175,11 +211,11 @@ function PlaceDetail({ placeId, character, onClose }) {
 
             {/* Actions */}
             <div style={{ display: "flex", gap: 8 }}>
-              <button style={ghostButton()}>
+              <button onClick={handleSave} style={{ ...ghostButton(), background: saved ? 'rgba(16,185,129,0.10)' : undefined, color: saved ? '#065F46' : undefined }}>
                 <img src="ds/icons/bookmark.svg" style={{ width: 16, height: 16, opacity: 0.7 }} />
-                저장
+                {saved ? '저장됨 ✓' : '저장'}
               </button>
-              <button style={ghostButton()}>
+              <button onClick={handleSwap} style={ghostButton()}>
                 <img src="ds/icons/refresh.svg" style={{ width: 16, height: 16, opacity: 0.7 }} />
                 비슷한 곳으로
               </button>
@@ -207,6 +243,7 @@ function PlaceDetail({ placeId, character, onClose }) {
           </div>
         </div>
       </div>
+      {toast && <Toast message={toast} onDone={() => setToast(null)} />}
     </div>
   );
 }

@@ -1,5 +1,15 @@
 // character.jsx — real AI character generation (Gemini / Claude / GPT)
 
+// Auto-infer character gender from travel companions + category preferences
+function inferGender(companions, categoryMain) {
+  const femCats = ['카페·디저트', '쇼핑·편집샵', '플리마켓·빈티지', '온천·휴식'];
+  const maleCats = ['서브컬처', '야경·뷰', '문화·역사·신사', '체험·액티비티'];
+  if (companions === '커플') return Math.random() > 0.5 ? '여성' : '남성';
+  if (femCats.includes(categoryMain)) return '여성';
+  if (maleCats.includes(categoryMain)) return '남성';
+  return Math.random() > 0.5 ? '여성' : '남성';
+}
+
 function Character({ inputs, character, setCharacter, onBack, onContinue }) {
   const [phase, setPhase] = useState(character.image ? "reveal" : "generating");
 
@@ -12,7 +22,13 @@ function Character({ inputs, character, setCharacter, onBack, onContinue }) {
       if (!hasGemini()) {
         // No key → keep mock after a short delay
         await sleep(2400);
-        if (!cancelled) setPhase("gender");
+        if (!cancelled) {
+        setCharacter(prev => ({
+          ...prev,
+          gender: inferGender(inputs.companions, inputs.categoryMain),
+        }));
+        setPhase("rendering");
+      }
         return;
       }
 
@@ -64,7 +80,13 @@ function Character({ inputs, character, setCharacter, onBack, onContinue }) {
         // aiGenerated stays undefined (falsy) → Reveal shows mock badge
       }
 
-      if (!cancelled) setPhase("gender");
+      if (!cancelled) {
+        setCharacter(prev => ({
+          ...prev,
+          gender: inferGender(inputs.companions, inputs.categoryMain),
+        }));
+        setPhase("rendering");
+      }
     })();
 
     return () => { cancelled = true; };
@@ -119,7 +141,6 @@ function Character({ inputs, character, setCharacter, onBack, onContinue }) {
   }, [phase]);
 
   if (phase === "generating") return <Generating phase={1} />;
-  if (phase === "gender")     return <GenderPick character={character} onPick={g => { setCharacter(prev => ({ ...prev, gender: g })); setPhase("rendering"); }} />;
   if (phase === "rendering")  return <Generating phase={2} character={character} />;
   return <Reveal inputs={inputs} character={character} onBack={onBack} onContinue={onContinue} onRedo={() => setPhase("generating")} />;
 }

@@ -8,6 +8,19 @@ function Itinerary({ character, inputs, onBack, openPlace, onOpenPlace, onCloseP
   const [gmapsCount, setGmapsCount]     = useState(0);
   const [mapOpen, setMapOpen]       = useState(false);
 
+  function handleSwapPlace(oldId, newId) {
+    if (!liveItin) return;
+    setLiveItin(prev => ({
+      ...prev,
+      days: prev.days.map(d => ({
+        ...d,
+        nodes: d.nodes.map(n =>
+          n.type === 'place' && n.id === oldId ? { ...n, id: newId } : n
+        ),
+      })),
+    }));
+  }
+
   // ── Generate dynamic itinerary via LLM ──────────────────────
   useEffect(() => {
     let cancelled = false;
@@ -174,7 +187,7 @@ JSON 출력 (days 배열, 요소 ${numDays}개):
   return (
     <PhoneShell
       overlay={openPlace && (
-        <PlaceDetail placeId={openPlace} character={character} onClose={onClosePlace} />
+        <PlaceDetail placeId={openPlace} character={character} onClose={onClosePlace} onSwapPlace={handleSwapPlace} />
       )}
     >
       {/* Page bar */}
