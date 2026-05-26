@@ -256,31 +256,42 @@ JSON 출력 (days 배열, 요소 ${numDays}개):
         ))}
       </div>
 
-      {/* Day header card */}
-      <div style={{ margin:'0 20px 14px', borderRadius:20, overflow:'hidden' }}>
-        <div style={{ background:dayHeaderBg(day), padding:'18px 20px 16px' }}>
-          <div style={{ fontSize:11, fontWeight:700, letterSpacing:'0.06em', opacity:0.5, textTransform:'uppercase', color:dayHeaderInk(day) }}>
-            DAY {day} · {dayData.weekday}요일
+      {/* Day header card — data style */}
+      <div style={{ margin:'0 20px 14px', borderRadius:16, background:'#fff', border:'1px solid var(--w-line-alternative)', overflow:'hidden' }}>
+        <div style={{ padding:'16px 18px 14px', borderBottom:'1px solid var(--w-line-alternative)' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:8 }}>
+            <span style={{ fontFamily:'var(--w-font-mono)', fontSize:10, fontWeight:700, letterSpacing:'0.07em', textTransform:'uppercase', color:'var(--w-label-assistive)' }}>
+              DAY {day} · {dayData.weekday}요일
+            </span>
+            <span style={{ fontFamily:'var(--w-font-mono)', fontSize:10, fontWeight:700, color:'var(--w-label-disable)' }}>
+              {dayData.date}
+            </span>
+            <span style={{ marginLeft:'auto', fontSize:10, fontWeight:700, padding:'2px 8px', borderRadius:5, background:'rgba(0,102,255,0.08)', color:'var(--w-primary)' }}>
+              {dayData.area}
+            </span>
           </div>
-          <div style={{ height:6 }} />
-          <div style={{ fontFamily:'var(--w-font-display)', fontSize:22, fontWeight:700, letterSpacing:'-0.02em', lineHeight:1.25, color:dayHeaderInk(day), whiteSpace:'pre-line' }}>
+          <div style={{ fontFamily:'var(--w-font-sans)', fontSize:20, fontWeight:700, letterSpacing:'-0.018em', lineHeight:1.3, color:'var(--w-label-normal)', whiteSpace:'pre-line' }}>
             {dayData.title}
           </div>
-          <div style={{ height:10 }} />
-          <p style={{ fontSize:13, lineHeight:1.6, color:dayHeaderInk(day), opacity:0.7, margin:0, fontWeight:500 }}>
-            {dayData.desc}
-          </p>
+          {dayData.desc && (
+            <p style={{ fontSize:12, lineHeight:1.6, color:'var(--w-label-alternative)', margin:'8px 0 0', fontWeight:500 }}>
+              {dayData.desc}
+            </p>
+          )}
         </div>
-        {/* Stats row */}
-        <div style={{ display:'flex', background:'rgba(0,0,0,0.04)', padding:'10px 20px' }}>
+        {/* Stats row — data cells */}
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', background:'var(--w-bg-alternative)' }}>
           {[
-            ['🚶', `${dayData.walking || '–'}분 도보`],
-            ['💴', `¥${(dayData.budget || 0).toLocaleString()}`],
-            ['😮‍💨', `피로도 ${dayData.fatigue || '–'}/10`],
-          ].map(([icon, txt]) => (
-            <div key={txt} style={{ flex:1, textAlign:'center', fontSize:11, fontWeight:700, color:'var(--w-label-alternative)' }}>
-              {icon}
-              <div style={{ marginTop:2 }}>{txt}</div>
+            { v: `${dayData.walking||'—'}분`, l:'도보' },
+            { v: `¥${((dayData.budget||0)/1000).toFixed(0)}K`,   l:'예산' },
+            { v: `${dayData.fatigue||'—'}/10`, l:'피로도' },
+          ].map((s, i) => (
+            <div key={i} style={{
+              padding:'10px 8px', display:'flex', flexDirection:'column', alignItems:'center', gap:3,
+              borderRight: i < 2 ? '1px solid var(--w-line-alternative)' : undefined,
+            }}>
+              <span style={{ fontFamily:'var(--w-font-mono)', fontSize:14, fontWeight:700, letterSpacing:'-0.01em', color:'var(--w-label-normal)' }}>{s.v}</span>
+              <span style={{ fontSize:9, fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase', color:'var(--w-label-assistive)' }}>{s.l}</span>
             </div>
           ))}
         </div>
@@ -292,22 +303,6 @@ JSON 출력 (days 배열, 요소 ${numDays}개):
       </div>
     </PhoneShell>
   );
-}
-
-// ── Day card colour helpers ───────────────────────────────────
-function dayHeaderBg(idx) {
-  const p = {
-    1: 'linear-gradient(135deg,#FFE6D4 0%,#FFC79A 100%)',
-    2: 'linear-gradient(135deg,#DCCFFF 0%,#B399FF 100%)',
-    3: 'linear-gradient(135deg,#C5E9D6 0%,#88D2B0 100%)',
-    4: 'linear-gradient(135deg,#FFD6E8 0%,#F7A4C5 100%)',
-    5: 'linear-gradient(135deg,#C5DFF8 0%,#8DB8F0 100%)',
-  };
-  return p[idx] || p[((idx - 1) % 5) + 1] || p[1];
-}
-function dayHeaderInk(idx) {
-  const k = { 1:'#4d1f00', 2:'#2a1466', 3:'#0c3d28', 4:'#590e3a', 5:'#0c2d5a' };
-  return k[idx] || k[((idx - 1) % 5) + 1] || k[1];
 }
 
 // ── Timeline components ───────────────────────────────────────
@@ -431,7 +426,7 @@ function GeneratingItin() {
 
   return (
     <PhoneShell scroll={false}>
-      <div style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 32px', background:'radial-gradient(circle at 50% 30%, #EAF2FE 0%, #FFFFFF 70%)' }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', padding:'0 32px', background:'#F8F9FA' }}>
         <Eyebrow tone="brand">AI 일정 생성</Eyebrow>
         <div style={{ height:10 }} />
         <Heading>{"캐릭터 취향으로\n동선을 짜는 중이에요"}</Heading>
